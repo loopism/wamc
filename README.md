@@ -1,6 +1,6 @@
-# Media Server
+# WAMC
 
-A media server configuration to run Plex, Sonarr, Radarr, and Transmission in Docker and behind Traefik.
+Based strongly on https://github.com/420m/dockyard, but intended for running on a home server.
 
 
 ## First run
@@ -8,12 +8,10 @@ A media server configuration to run Plex, Sonarr, Radarr, and Transmission in Do
 - install [Docker](https://www.docker.com/)
 - create a [Plex accout](https://www.plex.tv/)
 - clone this repository
-- clone and setup [the reverse proxy](https://github.com/hkaj/reverse_proxy)
 - create a user for your media server, export its `$USER_ID` and `$GROUP_ID`.
 - create a media folder in docker-compose's folder with $USER_ID:$GROUP_ID ownership
 - get your Plex claim token at https://www.plex.tv/claim/
 - run `DOMAIN_NAME="..." PLEX_TOKEN="..." USER_ID="$USER_ID" GROUP_ID="$GROUP_ID" docker-compose up -d`
-- profit :)
 
 ## Config
 
