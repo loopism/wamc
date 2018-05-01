@@ -9,7 +9,7 @@ services:
       - web
     environment:
       - PLEX_CLAIM="${PLEX_TOKEN}"
-      # - ADVERTISE_IP="https://plex.${DOMAIN_NAME}/" # Consider 
+      # - ADVERTISE_IP="https://plex.${DOMAIN_NAME}/" # Consider using this with ngrok; update README.md if relevant
       - PLEX_UID=${USER_ID}
       - PLEX_GID=${GROUP_ID}
     volumes:

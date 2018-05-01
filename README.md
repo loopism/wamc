@@ -8,10 +8,15 @@ Based strongly on https://github.com/420m/dockyard, but intended for running on 
 - install [Docker](https://www.docker.com/)
 - create a [Plex accout](https://www.plex.tv/)
 - clone this repository
-- create a user for your media server, export its `$USER_ID` and `$GROUP_ID`.
+- create a user for your media server.
+- create a file in this repository called `.env` (it will be ignored by git) with the following contents:
+  ```
+  USER_ID=[user id for user you just created]
+  GROUP_ID=[group id for user you just created]
+  ```
 - create a media folder in docker-compose's folder with $USER_ID:$GROUP_ID ownership
 - get your Plex claim token at https://www.plex.tv/claim/
-- run `DOMAIN_NAME="..." PLEX_TOKEN="..." USER_ID="$USER_ID" GROUP_ID="$GROUP_ID" docker-compose up -d`
+- run `PLEX_TOKEN="..." docker-compose up -d`
 
 ## Config
 
