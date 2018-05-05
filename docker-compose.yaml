@@ -3,13 +3,8 @@ version: '3'
 services:
   plex:
     image: plexinc/pms-docker:latest
-    ports:
-      - "32400:32400"
-    networks:
-      - web
+    network_mode: host
     environment:
-      - PLEX_CLAIM="${PLEX_TOKEN}"
-      # - ADVERTISE_IP="https://plex.${DOMAIN_NAME}/" # Consider using this with ngrok; update README.md if relevant
       - PLEX_UID=${USER_ID}
       - PLEX_GID=${GROUP_ID}
     volumes:
@@ -17,7 +12,6 @@ services:
       - ./media/radarr/movies:/data/movies
       - ./media/sonarr/series:/data/tvshows
       - ./media/plex/config/:/config
-      - /tmp/transcode/:/transcode
     depends_on:
       - transmission
       - sonarr
@@ -108,17 +102,6 @@ services:
       - PGID=${GROUP_ID}
     restart: always
 
-  ngrok:
-    image: aruizca/docker-simple-ngrok
-    networks:
-      - web
-    ports:
-      - "4040:4040"
-    restart: always
-    command: ["./ngrok", "http", "wamc_sonarr_1:8989"]
-    depends_on:
-      - sonarr
-
   cadvisor:
     image: google/cadvisor:latest
     ports:
@@ -129,6 +112,7 @@ services:
       - /sys:/sys:ro
       - /var/lib/docker:/var/lib/docker:ro
       - /dev/disk:/dev/disk:ro
+    restart: always
 
   muximux:
     image: linuxserver/muximux
@@ -136,6 +120,29 @@ services:
       - "80:80"
     volumes:
       - ./media/muximux/config:/config
+    restart: always
+
+  duc:
+    image: digitalman2112/duc
+    ports:
+      - "8888:80"
+    volumes:
+      - .:/data:ro
+    restart: always
+
+  watchtower:
+    image: v2tec/watchtower
+    restart: always
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+
+  static:
+    image: nginx
+    ports:
+      - "8889:80"
+    volumes:
+      - ./static/:/usr/share/nginx/html:ro
+    restart: always
 
 networks:
   web:
