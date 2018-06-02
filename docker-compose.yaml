@@ -18,19 +18,19 @@ services:
       - radarr
     restart: always
 
-  plexpy:
-    image: linuxserver/plexpy:latest
+  tautulli:
+    image: linuxserver/tautulli:latest
     networks:
       - web
     environment:
       - PUID=${USER_ID}
       - PGID=${GROUP_ID}
     volumes:
-      - ./media/plexpy:/config
+      - ./media/tautulli:/config
       - ./media/plex/config/Library/Application\ Support/Plex\ Media\ Server/Logs:/logs:ro
     labels:
       - "traefik.enable=true"
-      - "traefik.frontend.rule=PathPrefix:/plexpy"
+      - "traefik.frontend.rule=PathPrefix:/tautulli"
       - "traefik.port=8181"
     depends_on:
       - plex

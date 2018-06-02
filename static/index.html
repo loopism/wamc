@@ -45,20 +45,84 @@
       <div class="demo-container mdl-grid">
         <div class="mdl-cell mdl-cell--2-col mdl-cell--hide-tablet mdl-cell--hide-phone"></div>
         <div class="demo-content mdl-color--white mdl-shadow--4dp content mdl-color-text--grey-800 mdl-cell mdl-cell--8-col">
-          <h3>Helpful Links</h3>
-          <ul>
-            <li><a href="https://docs.google.com/document/d/1iI5wqSvwL1-oNez3Lc00ljj83q76rz9k-bRsO6XAI60/edit#">Documentation</a></li>
-            <li><a href="https://plex.tv">plex</a>
-              <ul>
-                <li>If that doesn't work, <a href="https://plex.wamc.eu.ngrok.io">direction connection to
-                    plex</a></li>
-              </ul>
-              <li><a href="/sonarr">sonarr</a></li>
-              <li><a href="/radarr">radarr</a></li>
-              <li><a href="/jackett">jackett</a></li>
-              <li><a href="/transmission/web/">transmission</a></li>
-              <li><a href="/plexpy">plexpy</a></li>
-              <li><a href="/cgi-bin/duc.cgi?cmd=index&path=/data">duc</a></li>
+          <ul class="demo-list-three mdl-list">
+            <li class="mdl-list__item mdl-list__item--three-line">
+              <span class="mdl-list__item-primary-content">
+                <img class="mdl-list__item-avatar" src="/icons/plex.png" />
+                <span><a href="https://app.plex.tv">Plex</a></span>
+                <span class="mdl-list__item-text-body">
+                  Plex lets you stream the media we have. If this doesn't work, try
+                  <a href="https://plex.wamc.eu.ngrok.io">direction connection to
+                    plex</a> instead.
+                </span>
+              </span>
+            </li>
+            <li class="mdl-list__item mdl-list__item--three-line">
+              <span class="mdl-list__item-primary-content">
+                <img class="avatar-bg mdl-list__item-avatar" src="/sonarr/Content/Images/logos/128.png" />
+                <span><a href="/sonarr">Sonarr</a></span>
+                <span class="mdl-list__item-text-body">
+                  Follows TV shows, tells transmission to download them, renames them and
+                  makes them available to Plex.
+                </span>
+              </span>
+            </li>
+            <li class="mdl-list__item mdl-list__item--three-line">
+              <span class="mdl-list__item-primary-content">
+                <img class="avatar-bg mdl-list__item-avatar" src="/radarr/Content/Images/logos/128.png" />
+                <span><a href="/sonarr">Radarr</a></span>
+                <span class="mdl-list__item-text-body">
+                  Follows movies, tells transmission to download them, renames them and
+                  makes them available to Plex.
+                </span>
+              </span>
+            </li>
+            <li class="mdl-list__item mdl-list__item--three-line">
+              <span class="mdl-list__item-primary-content">
+                <img class="avatar-bg mdl-list__item-avatar" src="/transmission/web/style/transmission/images/logo.png" />
+                <span><a href="/transmission/web/">Transmission</a></span>
+                <span class="mdl-list__item-text-body">
+                  Bittorrent client, does the actual downloading.
+                </span>
+              </span>
+            </li>
+            <li class="mdl-list__item mdl-list__item--three-line">
+              <span class="mdl-list__item-primary-content">
+                <i class="mdl-list__item-avatar material-icons">storage</i>
+                <span><a href="/cgi-bin/duc.cgi?cmd=index&path=/data">DUC</a></span>
+                <span class="mdl-list__item-text-body">
+                  Disk usage analyzer; what's taking up all the space?
+                </span>
+              </span>
+            </li>
+            <li class="mdl-list__item mdl-list__item--three-line">
+              <span class="mdl-list__item-primary-content">
+                <img class="avatar-bg mdl-list__item-avatar" src="/icons/tautulli.png" />
+                <span><a href="/tautulli">Tautulli</a></span>
+                <span class="mdl-list__item-text-body">
+                  Keeps track and shows statistics of who's watching what. <small>(Formerly
+                    plexpy)</small>
+                </span>
+              </span>
+            </li>
+            <li class="mdl-list__item mdl-list__item--three-line">
+              <span class="mdl-list__item-primary-content">
+                <img class="avatar-bg mdl-list__item-avatar" src="/jackett/jacket_medium.png" />
+                <span><a href="/jackett">Jackett</a></span>
+                <span class="mdl-list__item-text-body">
+                  A proxy used by Sonarr and Radarr to communicate with torrent trackers.
+                </span>
+              </span>
+            </li>
+            <li class="mdl-list__item mdl-list__item--three-line">
+              <span class="mdl-list__item-primary-content">
+                <i class="mdl-list__item-avatar material-icons">help</i>
+                <span><a href="https://docs.google.com/document/d/1iI5wqSvwL1-oNez3Lc00ljj83q76rz9k-bRsO6XAI60/">Documentation</a></span>
+                <span class="mdl-list__item-text-body">
+                  More documentation, in case stuff doesn't work as expected.
+                </span>
+              </span>
+            </li>
           </ul>
         </div>
       </div>
@@ -66,6 +130,12 @@
         <div class="mdl-mini-footer--left-section">
           <ul class="mdl-mini-footer--link-list">
             <li><a href="http://plex.tv">Plex</a></li>
+            <li><a href="https://sonarr.tv">Sonarr</a></li>
+            <li><a href="https://radarr.video">Radarr</a></li>
+            <li><a href="https://tautulli.com">Tautulli</a></li>
+            <li><a href="http://duc.zevv.nl">DUC</a></li>
+            <li><a href="https://github.com/Jackett/Jackett">Jackett</a></li>
+            <li><a href="https://transmissionbt.com">Transmission</a></li>
           </ul>
         </div>
       </footer>
