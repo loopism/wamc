@@ -20,8 +20,6 @@ services:
 
   plexpy:
     image: linuxserver/plexpy:latest
-    ports:
-      - "8181:8181"
     networks:
       - web
     environment:
@@ -42,8 +40,6 @@ services:
     image: linuxserver/transmission:latest
     networks:
       - web
-    ports:
-      - "9091:9091"
     environment:
       - PUID=${USER_ID}
       - PGID=${GROUP_ID}
@@ -61,8 +57,6 @@ services:
     image: linuxserver/sonarr:latest
     networks:
       - web
-    ports:
-      - "8989:8989"
     labels:
       - "traefik.enable=true"
       - "traefik.frontend.rule=PathPrefix:/sonarr"
@@ -84,8 +78,6 @@ services:
     image: linuxserver/radarr:latest
     networks:
       - web
-    ports:
-      - "7878:7878"
     labels:
       - "traefik.enable=true"
       - "traefik.frontend.rule=PathPrefix:/radarr"
@@ -108,8 +100,10 @@ services:
     image: linuxserver/jackett:latest
     networks:
       - web
-    ports:
-      - "9117:9117"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.frontend.rule=PathPrefix:/jackett"
+      - "traefik.port=9117"
     volumes:
       - ./media/jackett/config/:/config
       - ./media/transmission/downloads/:/downloads
@@ -120,8 +114,6 @@ services:
 
   duc:
     image: digitalman2112/duc
-    ports:
-      - "8888:80"
     volumes:
       - .:/data:ro
     labels:
@@ -131,16 +123,8 @@ services:
     networks:
       - web
 
-  watchtower:
-    image: v2tec/watchtower
-    restart: always
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-
   static:
     image: nginx
-    ports:
-      - "8889:80"
     networks:
       - web
     volumes:
