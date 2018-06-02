@@ -30,6 +30,10 @@ services:
     volumes:
       - ./media/plexpy:/config
       - ./media/plex/config/Library/Application\ Support/Plex\ Media\ Server/Logs:/logs:ro
+    labels:
+      - "traefik.enable=true"
+      - "traefik.frontend.rule=PathPrefix:/plexpy"
+      - "traefik.port=8181"
     depends_on:
       - plex
     restart: always
@@ -47,6 +51,10 @@ services:
       - /etc/localtime:/etc/localtime:ro
       - ./media/transmission/config/:/config
       - ./media/transmission/downloads/:/downloads
+    labels:
+      - "traefik.enable=true"
+      - "traefik.frontend.rule=PathPrefix:/transmission"
+      - "traefik.port=9091"
     restart: always
 
   sonarr:
@@ -55,6 +63,10 @@ services:
       - web
     ports:
       - "8989:8989"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.frontend.rule=PathPrefix:/sonarr"
+      - "traefik.port=8989"
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /dev/rtc:/dev/rtc:ro
@@ -74,6 +86,10 @@ services:
       - web
     ports:
       - "7878:7878"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.frontend.rule=PathPrefix:/radarr"
+      - "traefik.port=7878"
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /dev/rtc:/dev/rtc:ro
@@ -102,33 +118,18 @@ services:
       - PGID=${GROUP_ID}
     restart: always
 
-  cadvisor:
-    image: google/cadvisor:latest
-    ports:
-      - "8080:8080"
-    volumes:
-      - /:/rootfs:ro
-      - /var/run:/var/run:rw
-      - /sys:/sys:ro
-      - /var/lib/docker:/var/lib/docker:ro
-      - /dev/disk:/dev/disk:ro
-    restart: always
-
-  muximux:
-    image: linuxserver/muximux
-    ports:
-      - "80:80"
-    volumes:
-      - ./media/muximux/config:/config
-    restart: always
-
   duc:
     image: digitalman2112/duc
     ports:
       - "8888:80"
     volumes:
       - .:/data:ro
+    labels:
+      - "traefik.enable=true"
+      - "traefik.frontend.rule=PathPrefix:/cgi-bin/duc.cgi"
     restart: always
+    networks:
+      - web
 
   watchtower:
     image: v2tec/watchtower
@@ -140,9 +141,57 @@ services:
     image: nginx
     ports:
       - "8889:80"
+    networks:
+      - web
     volumes:
       - ./static/:/usr/share/nginx/html:ro
+    labels:
+      - "traefik.enable=true"
+      - "traefik.frontend.rule=PathPrefix:/"
     restart: always
+
+  traefik:
+    image: traefik
+    restart: always
+    ports:
+      - "8111:80"
+      - "8112:443"
+      - "8113:8080"
+    networks:
+      - web
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./traefik.toml:/traefik.toml
+      - ./acme.json:/acme.json
+      - ./.htpasswd:/.htpasswd
+    container_name: traefik
+  traefik2:
+    image: traefik
+    restart: always
+    ports:
+      - "8114:80"
+      - "8115:443"
+      - "8116:8080"
+    networks:
+      - web
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./traefik2.toml:/traefik.toml
+      - ./acme2.json:/acme.json
+      - ./.htpasswd:/.htpasswd
+    container_name: traefik2
+  traefik_local:
+    image: traefik
+    restart: always
+    ports:
+      - "80:80"
+      - "8080:8080"
+    networks:
+      - web
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./traefik_local.toml:/traefik.toml
+    container_name: traefik_local
 
 networks:
   web:

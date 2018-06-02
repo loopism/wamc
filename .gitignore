@@ -103,3 +103,10 @@ tags
 
 # Media (oooops...)
 media/
+
+# Certificates
+acme.json
+acme2.json
+
+# Authentication
+.htpasswd

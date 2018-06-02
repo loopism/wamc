@@ -1,0 +1,35 @@
+logLevel = "INFO"
+
+defaultEntryPoints = ["http","https"]
+
+[api]
+
+[entryPoints]
+  [entryPoints.traefik]
+    address = ":8080"
+  [entryPoints.http]
+  address = ":80"
+    [entryPoints.http.redirect]
+    entryPoint = "https"
+  [entryPoints.https]
+  address = ":443"
+  [entryPoints.https.tls]
+  [entryPoints.https.auth]
+    [entryPoints.https.auth.basic]
+      usersFile = "/.htpasswd"
+
+[docker]
+endpoint = "unix:///var/run/docker.sock"
+watch = true
+exposedByDefault = false
+
+[acme]
+email = "lutzky@gmail.com"
+acmeLogging = true
+storage = "acme.json"
+entryPoint = "https"
+onHostRule = true
+[acme.httpChallenge]
+  entryPoint = "http"
+[[acme.domains]]
+  main = "wamc2.lutzky.net"
