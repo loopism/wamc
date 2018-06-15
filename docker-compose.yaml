@@ -149,21 +149,6 @@ services:
       - ./acme.json:/acme.json
       - ./.htpasswd:/.htpasswd
     container_name: traefik
-  traefik2:
-    image: traefik
-    restart: always
-    ports:
-      - "8114:80"
-      - "8115:443"
-      - "8116:8080"
-    networks:
-      - web
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - ./traefik2.toml:/traefik.toml
-      - ./acme2.json:/acme.json
-      - ./.htpasswd:/.htpasswd
-    container_name: traefik2
   traefik_local:
     image: traefik
     restart: always
