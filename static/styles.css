@@ -26,8 +26,21 @@
   flex-shrink: 0;
 }
 
+@media screen and (max-width:1024px) {
+  .demo-header .mdl-layout__header-row {
+    padding-left: 80px;
+  }
+}
+@media screen and (min-width:1024px) {
+  .demo-header .mdl-layout__header-row {
+    padding-left: 90px;
+  }
+}
+
 .demo-header .mdl-layout__header-row {
-  padding-left: 40px;
+  background-image: url(icons/favicon.svg);
+  background-repeat: no-repeat;
+  background-position: left 10px top;
 }
 
 .demo-container {
