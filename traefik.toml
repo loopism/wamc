@@ -24,7 +24,7 @@ watch = true
 exposedByDefault = false
 
 [acme]
-email = "lutzky@gmail.com"
+email = "rbyrnes@gmail.com"
 acmeLogging = true
 storage = "acme.json"
 entryPoint = "https"
@@ -32,4 +32,4 @@ onHostRule = true
 [acme.httpChallenge]
   entryPoint = "http"
 [[acme.domains]]
-  main = "wamc.lutzky.net"
+  main = "wamc.thebyrnes.net.au"
