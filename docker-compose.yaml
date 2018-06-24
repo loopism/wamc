@@ -3,8 +3,8 @@ version: '3'
 services:
   plex:
     image: plexinc/pms-docker:latest
+    container_name: plex
     network_mode: host
-	container_name: plex
     environment:
       - PLEX_UID=${USER_ID}
       - PLEX_GID=${GROUP_ID}
@@ -23,6 +23,7 @@ services:
 
   tautulli:
     image: linuxserver/tautulli:latest
+    container_name: tautulli
     networks:
       - web
     environment:
@@ -41,6 +42,7 @@ services:
 
   transmission:
     image: linuxserver/transmission:latest
+    container_name: transmission
     networks:
       - web
     environment:
@@ -58,6 +60,7 @@ services:
 
   sickgear:
     image: deed02392/sickgear:latest
+    container_name: sickgear
     networks:
       - web
     labels:
@@ -79,6 +82,7 @@ services:
 
   radarr:
     image: linuxserver/radarr:latest
+    container_name: radarr
     networks:
       - web
     labels:
@@ -102,6 +106,7 @@ services:
   # Proxy to a bunch of public trackers
   jackett:
     image: linuxserver/jackett:latest
+    container_name: jackett
     networks:
       - web
     labels:
@@ -139,6 +144,7 @@ services:
 
   static:
     image: nginx
+    container_name: nginx
     networks:
       - web
     volumes:
@@ -150,6 +156,7 @@ services:
 
   traefik:
     image: traefik
+    container_name: traefik
     restart: always
     ports:
       - "8111:80"
@@ -165,6 +172,7 @@ services:
     container_name: traefik
   traefik_local:
     image: traefik
+    container_name: traefik-local
     restart: always
     ports:
       - "80:80"
