@@ -59,7 +59,7 @@ services:
     restart: always
 
   sickgear:
-    image: deed02392/sickgear:latest
+    image: sickgear/sickgear:latest
     container_name: sickgear
     networks:
       - web
@@ -77,7 +77,7 @@ services:
       - APP_GID=${GROUP_ID}
     depends_on:
       - nzbget
-	  - transmission
+      - transmission
     restart: always
 
   radarr:
@@ -100,7 +100,7 @@ services:
       - PGID=${GROUP_ID}
     depends_on:
       - nzbget
-	  - transmission
+      - transmission
     restart: always
 
   # Proxy to a bunch of public trackers
@@ -122,7 +122,7 @@ services:
     restart: always
     
   nzbget:
-    image: linuxserver/nzbget
+    image: loopism/nzbget:latest
     container_name: nzbget
     restart: always
     ports:
