@@ -63,7 +63,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.frontend.rule=PathPrefix:/sickgear"
-      - "traefik.port=8989"
+      - "traefik.port=8081"
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /volume1/TV:/tv
