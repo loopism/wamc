@@ -4,17 +4,20 @@ services:
   plex:
     image: plexinc/pms-docker:latest
     network_mode: host
+	container_name: plex
     environment:
       - PLEX_UID=${USER_ID}
       - PLEX_GID=${GROUP_ID}
     volumes:
       - /etc/localtime:/etc/localtime:ro
-      - ./media/radarr/movies:/data/movies
-      - ./media/sonarr/series:/data/tvshows
-      - ./media/plex/config/:/config
+      - /volume1/TV:/TV
+      - /volume1/Movies:/Movies
+      - /volume1/docker/plex/config/:/config
+      - /volume1/docker/plex/transcode/:/transcode
     depends_on:
+      - nzbget
       - transmission
-      - sonarr
+      - sickgear
       - radarr
     restart: always
 
@@ -26,8 +29,8 @@ services:
       - PUID=${USER_ID}
       - PGID=${GROUP_ID}
     volumes:
-      - ./media/tautulli:/config
-      - ./media/plex/config/Library/Application\ Support/Plex\ Media\ Server/Logs:/logs:ro
+      - /volume1/docker/tautulli:/config
+      - /volume1/docker/plex/config/Library/Application\ Support/Plex\ Media\ Server/Logs:/logs:ro
     labels:
       - "traefik.enable=true"
       - "traefik.frontend.rule=PathPrefix:/tautulli"
@@ -45,33 +48,33 @@ services:
       - PGID=${GROUP_ID}
     volumes:
       - /etc/localtime:/etc/localtime:ro
-      - ./media/transmission/config/:/config
-      - ./media/transmission/downloads/:/downloads
+      - /volume1/docker/transmission/config/:/config
+      - /volume1/downloads/:/downloads
     labels:
       - "traefik.enable=true"
       - "traefik.frontend.rule=PathPrefix:/transmission"
       - "traefik.port=9091"
     restart: always
 
-  sonarr:
-    image: linuxserver/sonarr:latest
+  sickgear:
+    image: deed02392/sickgear:latest
     networks:
       - web
     labels:
       - "traefik.enable=true"
-      - "traefik.frontend.rule=PathPrefix:/sonarr"
+      - "traefik.frontend.rule=PathPrefix:/sickgear"
       - "traefik.port=8989"
     volumes:
       - /etc/localtime:/etc/localtime:ro
-      - /dev/rtc:/dev/rtc:ro
-      - ./media/sonarr/series:/tv
-      - ./media/sonarr/config:/config
-      - ./media/transmission/downloads/:/downloads
+      - /volume1/TV:/tv
+      - /volume1/docker/sickgear/data:/data
+      - /volume1/downloads/dst/TV/:/incoming
     environment:
-      - PUID=${USER_ID}
-      - PGID=${GROUP_ID}
+      - APP_UID=${USER_ID}
+      - APP_GID=${GROUP_ID}
     depends_on:
-      - transmission
+      - nzbget
+	  - transmission
     restart: always
 
   radarr:
@@ -85,14 +88,15 @@ services:
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /dev/rtc:/dev/rtc:ro
-      - ./media/radarr/movies:/movies
-      - ./media/radarr/config:/config
-      - ./media/transmission/downloads/:/downloads
+      - /volume1/Movies:/movies
+      - /volume1/docker/radarr/config:/config
+      - /volume1/downloads/:/downloads
     environment:
       - PUID=${USER_ID}
       - PGID=${GROUP_ID}
     depends_on:
-      - transmission
+      - nzbget
+	  - transmission
     restart: always
 
   # Proxy to a bunch of public trackers
@@ -111,17 +115,27 @@ services:
       - PUID=${USER_ID}
       - PGID=${GROUP_ID}
     restart: always
-
-  duc:
-    image: digitalman2112/duc
-    volumes:
-      - .:/data:ro
-    labels:
-      - "traefik.enable=true"
-      - "traefik.frontend.rule=PathPrefix:/cgi-bin/duc.cgi"
+    
+  nzbget:
+    image: linuxserver/nzbget
+    container_name: nzbget
     restart: always
+    ports:
+      - "6789:6789"
     networks:
       - web
+    environment:
+      - PUID=${USER_ID}
+      - PGID=${GROUP_ID}
+    volumes:
+      - ./media/nzbget/config:/config
+      - ./media/nzbget/downloads:/downloads
+    labels:
+      - "traefik.enable=true"
+      - "traefik.backend=nzbget"
+      - "traefik.frontend.rule=Host:nzbget.${DOMAIN_NAME}"
+      - "traefik.port=6789"
+      - "traefik.docker.network=web"
 
   static:
     image: nginx
