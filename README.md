@@ -2,6 +2,8 @@
 
 Based strongly on https://github.com/420m/dockyard, but intended for running on a home server.
 
+This is configured so that access is possible both locally and remotely; e.g. everything should still work if internet connectivitiy goes out. To achieve this, subdomains are not used, and all reverse-proxy configuration is path-based.
+
 
 ## First run
 
