@@ -1,0 +1,181 @@
+#!/usr/bin/python
+
+from datetime import datetime, timedelta
+import StringIO
+import argparse
+import httplib
+import logging
+import os
+import socket
+import urllib
+import yaml
+
+def curdir_realpath(path):
+  return os.path.realpath(os.path.join(os.path.dirname(__file__), path))
+
+CONFIG_FILE=curdir_realpath('wamcstats.yaml')
+PUSHOVER_CONFIG_FILE=curdir_realpath('pushover.yaml')
+TIMESTAMP_FILE="/tmp/wamcstats"
+
+class Notifier:
+  def __init__(self, args):
+    self.dryrun = args.dryrun
+    self.config = yaml.load(open(CONFIG_FILE))
+    self.config["pushover"] = yaml.load(open(PUSHOVER_CONFIG_FILE))
+
+  def maybe_notify(self):
+    if not self._should_notify():
+      logging.info('Timestamp is too new')
+      return
+    self._mark_timestamp()
+    logging.info('Should notify!')
+
+    output = StringIO.StringIO()
+    print >>output, "Hello from", socket.gethostname(), "running WAMC!"
+    print >>output, "Uptime is", uptime()
+    if reboot_required_since() != None:
+      print >>output, "WARNING: Reboot required for", \
+        datetime.utcnow() - reboot_required_since()
+    for path in self.config["monitored-partitions"]:
+      print >>output, FSReport(path).report()
+    if self._fs_with_warning():
+      print >>output, "WARNING: Remaining disk space too low on", \
+        self._fs_with_warning()
+
+    self._pushover_notify(output.getvalue())
+
+  def _fs_with_warning(self):
+    result = []
+    for path in self.config["monitored-partitions"]:
+      if FSReport(path).avail_fraction() < \
+          self.config["minimal-free-space-fraction"]:
+        result.append(path)
+    return result
+
+  def _should_notify(self):
+    min_timestamp_age = self._heartbeat_hours()
+    if self._fs_with_warning():
+      min_timestamp_age = self._alert_hours()
+
+    logging.info('Minimal timestamp age to notify: %s', min_timestamp_age)
+
+    return self._timestamp_age() > min_timestamp_age
+
+  def _prev_timestamp(self):
+    if os.path.isfile(TIMESTAMP_FILE):
+      s = os.stat(TIMESTAMP_FILE)
+      return datetime.utcfromtimestamp(s.st_mtime)
+    else:
+      return datetime(1970, 1, 1)
+
+  def _timestamp_age(self):
+    age = datetime.utcnow() - self._prev_timestamp()
+    logging.info('Timestamp age: %s', age)
+    return age
+
+  def _heartbeat_hours(self):
+    return timedelta(hours = int(self.config["heartbeat-hours"]))
+
+  def _alert_hours(self):
+    return timedelta(hours = int(self.config["alert-hours"]))
+
+  def _mark_timestamp(self):
+    if self.dryrun:
+      logging.info('Dry run - not timestamping at %s', TIMESTAMP_FILE)
+    try:
+      os.utime(TIMESTAMP_FILE, None)
+    except OSError:
+      open(TIMESTAMP_FILE, 'a').close()
+
+  def _pushover_notify(self, msg):
+    if self.dryrun:
+      logging.info("DRY RUN: Would have sent pushover message")
+      logging.info("Pushover config: %s", self.config["pushover"])
+      logging.info("Message: %s", msg)
+      return
+
+    conn = httplib.HTTPSConnection('api.pushover.net:443')
+    conn.request('POST', '/1/messages',
+      urllib.urlencode({
+        'token': self.config["pushover"]["token"],
+        'user': self.config["pushover"]["user"],
+        'message': msg,
+      }), { "Content-Type": "application/x-www-form-urlencoded" })
+
+    r = conn.getresponse()
+
+    if r.status != httplib.OK:
+      raise Exception("Pushover returned %d %s" % (r.status, r.reason))
+
+def uptime():
+  with open('/proc/uptime', 'r') as f:
+    uptime_seconds = float(f.readline().split()[0])
+    return timedelta(seconds=uptime_seconds)
+
+def reboot_required_since():
+  try:
+    s = os.stat('/var/run/reboot-required')
+    return datetime.utcfromtimestamp(s.st_ctime)
+  except OSError:
+    return None
+
+
+class FSReport:
+  def __init__(self, path):
+    self.path = path
+    self.stat = os.statvfs(path)
+
+  def avail_fraction(self):
+    return (1.0 * self.stat.f_bavail) / self.stat.f_blocks
+
+  def avail_gigs(self):
+    return (self.stat.f_frsize  * self.stat.f_bavail) / (2.0 ** 30)
+
+  def report(self):
+    return "%s: %.0f GB (%.0f%%) left" % (self.path, self.avail_gigs(),
+                                          100 * self.avail_fraction())
+
+
+
+if __name__ == '__main__':
+  logformat = '%(asctime)s %(module)s:%(lineno)s %(levelname)s: %(message)s'
+  logging.basicConfig(level=logging.INFO, format=logformat)
+  parser = argparse.ArgumentParser(description='WAMC status')
+  parser.add_argument('-n', '--dryrun', dest='dryrun',
+          action='store_true', default=False)
+  args = parser.parse_args()
+
+  n = Notifier(args)
+  n.maybe_notify()
+
+oldcode="""
+
+set -e
+
+TOKEN=adihpmktwo7w5uoed92gspyu6t8ock
+USER=uaVzp6tXhLQYdn8RLV9Q8emHaLed5g
+MESSAGE=""
+
+cd $(dirname $0)
+
+append_to_message() {
+  MESSAGE="${MESSAGE}${1}
+"
+}
+
+append_to_message "Hello from $(hostname) running wamc!"
+
+if [[ -e /var/run/reboot-required ]]; then
+  append_to_message "Reboot required (since $(stat -c '%z' /var/run/reboot-required))"
+fi
+
+append_to_message "$(uptime)"
+append_to_message "df | grep sd:"
+append_to_message "$(df -h . | grep sd | sed 's/ \+/ /g')"
+
+curl -v -s \
+  --data-urlencode "token=$TOKEN" \
+  --data-urlencode "user=$USER" \
+  --data-urlencode "message=$MESSAGE" \
+  https://api.pushover.net/1/messages
+"""

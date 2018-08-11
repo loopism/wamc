@@ -1,0 +1,6 @@
+monitored-partitions:
+  - .
+  - /
+minimal-free-space-fraction: 0.2
+heartbeat-hours: 24
+alert-hours: 6

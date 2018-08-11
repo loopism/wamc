@@ -110,3 +110,4 @@ acme2.json
 
 # Authentication
 .htpasswd
+pushover.yaml
