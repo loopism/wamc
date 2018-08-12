@@ -32,6 +32,7 @@ services:
       - --database=/database.db
       - --scope=/srv
       - --baseurl=/filebrowser
+      - --no-auth
     labels:
       - "traefik.enable=true"
       - "traefik.frontend.rule=PathPrefix:/filebrowser"
