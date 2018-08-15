@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
 from datetime import datetime, timedelta
+from logging.config import dictConfig
 import StringIO
 import argparse
 import httplib
@@ -9,6 +10,28 @@ import os
 import socket
 import urllib
 import yaml
+
+logging_config = dict(
+  version = 1,
+  formatters = {
+    'f': {'format':
+          '%(asctime)s %(module)s:%(lineno)s %(levelname)s: %(message)s'}
+  },
+  handlers = {
+    'h': {'class': 'logging.StreamHandler',
+          'formatter': 'f',
+          'level': logging.DEBUG},
+    'hF': {'class': 'logging.FileHandler',
+           'filename': '/tmp/wamcstats.log',
+           'formatter': 'f',
+           'level': logging.DEBUG},
+  },
+  root = {
+    'handlers': ['h', 'hF'],
+    'level': logging.DEBUG,
+  },
+)
+
 
 def curdir_realpath(path):
   return os.path.realpath(os.path.join(os.path.dirname(__file__), path))
@@ -36,7 +59,8 @@ class Notifier:
     if reboot_required_since() != None:
       print >>output, "WARNING: Reboot required for", \
         datetime.utcnow() - reboot_required_since()
-    for path in self.config["monitored-partitions"]:
+    for relpath in self.config["monitored-partitions"]:
+      path = os.path.join(os.path.dirname(CONFIG_FILE), relpath)
       print >>output, FSReport(path).report()
     if self._fs_with_warning():
       print >>output, "WARNING: Remaining disk space too low on", \
@@ -58,6 +82,10 @@ class Notifier:
       min_timestamp_age = self._alert_hours()
 
     logging.info('Minimal timestamp age to notify: %s', min_timestamp_age)
+
+    if self.dryrun:
+      logging.info('Dry run mode, so notify anyway')
+      return True
 
     return self._timestamp_age() > min_timestamp_age
 
@@ -138,15 +166,17 @@ class FSReport:
 
 
 if __name__ == '__main__':
-  logformat = '%(asctime)s %(module)s:%(lineno)s %(levelname)s: %(message)s'
-  logging.basicConfig(level=logging.INFO, format=logformat)
+  dictConfig(logging_config)
   parser = argparse.ArgumentParser(description='WAMC status')
   parser.add_argument('-n', '--dryrun', dest='dryrun',
           action='store_true', default=False)
   args = parser.parse_args()
 
   n = Notifier(args)
-  n.maybe_notify()
+  try:
+    n.maybe_notify()
+  except Exception, ex:
+    logging.exception(ex)
 
 oldcode="""
 
