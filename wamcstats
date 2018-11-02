@@ -38,14 +38,14 @@ def curdir_realpath(path):
   return os.path.realpath(os.path.join(os.path.dirname(__file__), path))
 
 CONFIG_FILE=curdir_realpath('wamcstats.yaml')
-PUSHOVER_CONFIG_FILE=curdir_realpath('pushover.yaml')
+SECRET_CONFIG_FILE=curdir_realpath('wamcstats-secret.yaml')
 TIMESTAMP_FILE="/tmp/wamcstats"
 
 class Notifier:
   def __init__(self, args):
     self.dryrun = args.dryrun
     self.config = yaml.load(open(CONFIG_FILE))
-    self.config["pushover"] = yaml.load(open(PUSHOVER_CONFIG_FILE))
+    self.config["pushover"] = yaml.load(open(SECRET_CONFIG_FILE))['pushover']
 
   def maybe_notify(self):
     if not self._should_notify():
@@ -162,9 +162,11 @@ def print_sonarr_health(output_file, health):
     print >>output_file, item['type'] + ': ' + item['message']
 
 def get_sonarr_health():
-  if 'SONARR_API_KEY' not in os.environ:
-    raise Exception('SONARR_API_KEY not defined')
-  sonarr_health_path = '/sonarr/api/health?apikey='+os.environ['SONARR_API_KEY']
+  try:
+    api_key = yaml.load(open(SECRET_CONFIG_FILE))['sonarr']['api_key']
+  except:
+    raise Exception('%s does not define sonarr.api_key' % SECRET_CONFIG_FILE)
+  sonarr_health_path = '/sonarr/api/health?apikey=' + api_key
   conn = httplib.HTTPConnection('localhost')
   conn.request('GET', sonarr_health_path)
   r = conn.getresponse()
