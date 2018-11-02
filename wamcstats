@@ -67,6 +67,12 @@ class Notifier:
       print >>output, "WARNING: Remaining disk space too low on", \
         self._fs_with_warning()
 
+    print >>output
+
+    print >>output, 'Load average:', os.getloadavg()
+
+    print >>output
+
     try:
       sonarr_health = get_sonarr_health()
       print_sonarr_health(output, sonarr_health)
