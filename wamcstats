@@ -177,35 +177,3 @@ if __name__ == '__main__':
     n.maybe_notify()
   except Exception, ex:
     logging.exception(ex)
-
-oldcode="""
-
-set -e
-
-TOKEN=adihpmktwo7w5uoed92gspyu6t8ock
-USER=uaVzp6tXhLQYdn8RLV9Q8emHaLed5g
-MESSAGE=""
-
-cd $(dirname $0)
-
-append_to_message() {
-  MESSAGE="${MESSAGE}${1}
-"
-}
-
-append_to_message "Hello from $(hostname) running wamc!"
-
-if [[ -e /var/run/reboot-required ]]; then
-  append_to_message "Reboot required (since $(stat -c '%z' /var/run/reboot-required))"
-fi
-
-append_to_message "$(uptime)"
-append_to_message "df | grep sd:"
-append_to_message "$(df -h . | grep sd | sed 's/ \+/ /g')"
-
-curl -v -s \
-  --data-urlencode "token=$TOKEN" \
-  --data-urlencode "user=$USER" \
-  --data-urlencode "message=$MESSAGE" \
-  https://api.pushover.net/1/messages
-"""
