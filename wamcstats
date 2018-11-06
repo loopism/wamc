@@ -48,12 +48,6 @@ class Notifier:
     self.config["pushover"] = yaml.load(open(SECRET_CONFIG_FILE))['pushover']
 
   def maybe_notify(self):
-    if not self._should_notify():
-      logging.info('Timestamp is too new')
-      return
-    self._mark_timestamp()
-    logging.info('Should notify!')
-
     output = StringIO.StringIO()
     print >>output, "Hello from", socket.gethostname(), "running WAMC!"
     print >>output, "Uptime is", uptime()
@@ -79,7 +73,17 @@ class Notifier:
     except Exception, ex:
       print >>output, "Failed to get sonarr health:", ex
 
-    self._pushover_notify(output.getvalue())
+    notification_text = output.getvalue()
+
+    logging.info('Notification text:\n%s', notification_text)
+
+    if not self._should_notify():
+      logging.info('Timestamp is too new')
+      return
+    self._mark_timestamp()
+    logging.info('Should notify!')
+
+    self._pushover_notify(notification_text)
 
   def _fs_with_warning(self):
     result = []
