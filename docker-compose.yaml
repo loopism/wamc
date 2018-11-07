@@ -13,7 +13,6 @@ services:
       - ./media/sonarr/series:/data/tvshows
       - ./media/plex/config/:/config
     depends_on:
-      - transmission
       - sonarr
       - radarr
     restart: always
