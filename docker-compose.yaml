@@ -67,6 +67,8 @@ services:
       - ./media/transmission/downloads/:/downloads
     labels:
       - "traefik.enable=true"
+      - "traefik.frontend.redirect.regex=^(.*)/transmission/(web)?$$"
+      - "traefik.frontend.redirect.replacement=$$1/transmission/web/"
       - "traefik.frontend.rule=PathPrefix:/transmission"
       - "traefik.port=9091"
     restart: always
