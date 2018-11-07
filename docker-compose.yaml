@@ -154,6 +154,25 @@ services:
       - "traefik.frontend.rule=PathPrefix:/"
     restart: always
 
+  glances:
+    image: nicolargo/glances
+    ports:
+      - "61208-61209:61208-61209"
+    networks:
+      - web
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - .:/data:ro
+    environment:
+      - "GLANCES_OPT=-w"
+    pid: host
+    labels:
+      - "traefik.enable=true"
+      # Ugly hack to add a trailing slash; https://github.com/containous/traefik/issues/563
+      - "traefik.frontend.redirect.regex=^(.*)/glances$$"
+      - "traefik.frontend.redirect.replacement=$$1/glances/"
+      - "traefik.frontend.rule=PathPrefix:/glances;ReplacePathRegex: ^/glances/(.*) /$$1"
+
   traefik:
     image: traefik
     restart: always
