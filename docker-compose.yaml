@@ -157,6 +157,8 @@ services:
   netdata:
     image: netdata/netdata
     hostname: wamc.lutzky.net
+    environment:
+      - PGID=999
     networks:
       - web
     ports:
