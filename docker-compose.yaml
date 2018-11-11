@@ -154,24 +154,28 @@ services:
       - "traefik.frontend.rule=PathPrefix:/"
     restart: always
 
-  glances:
-    image: nicolargo/glances
-    ports:
-      - "61208-61209:61208-61209"
+  netdata:
+    image: netdata/netdata
+    hostname: wamc.lutzky.net
     networks:
       - web
+    ports:
+      - 19999:19999
+    cap_add:
+      - SYS_PTRACE
+    security_opt:
+      - apparmor:unconfined
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - .:/data:ro
-    environment:
-      - "GLANCES_OPT=-w"
-    pid: host
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
     labels:
       - "traefik.enable=true"
+      - "traefik.port=19999"
       # Ugly hack to add a trailing slash; https://github.com/containous/traefik/issues/563
-      - "traefik.frontend.redirect.regex=^(.*)/glances$$"
-      - "traefik.frontend.redirect.replacement=$$1/glances/"
-      - "traefik.frontend.rule=PathPrefix:/glances;ReplacePathRegex: ^/glances/(.*) /$$1"
+      - "traefik.frontend.redirect.regex=^(.*)/netdata$$"
+      - "traefik.frontend.redirect.replacement=$$1/netdata/"
+      - "traefik.frontend.rule=PathPrefix:/netdata;ReplacePathRegex: ^/netdata/(.*) /$$1"
 
   traefik:
     image: traefik
