@@ -18,7 +18,7 @@ services:
     restart: always
 
   filebrowser:
-    image: filebrowser/filebrowser
+    image: filebrowser/filebrowser:v1.10.0
     networks:
       - web
     volumes:
@@ -34,7 +34,10 @@ services:
       - --no-auth
     labels:
       - "traefik.enable=true"
-      - "traefik.frontend.rule=PathPrefix:/filebrowser"
+      # Ugly hack to add a trailing slash; https://github.com/containous/traefik/issues/563
+      - "traefik.frontend.redirect.regex=^(.*)/filebrowser$$"
+      - "traefik.frontend.redirect.replacement=$$1/filebrowser/"
+      - "traefik.frontend.rule=PathPrefix:/filebrowser;ReplacePathRegex: ^/netdata/(.*) /$$1"
 
   tautulli:
     image: linuxserver/tautulli:latest
