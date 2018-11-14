@@ -154,7 +154,7 @@ services:
       - ./static/:/usr/share/nginx/html:ro
     labels:
       - "traefik.enable=true"
-      - "traefik.frontend.rule=PathPrefix:/"
+      - "traefik.frontend.rule=PathPrefixStrip:/static"
     restart: always
 
   netdata:
@@ -181,6 +181,20 @@ services:
       - "traefik.frontend.redirect.regex=^(.*)/netdata$$"
       - "traefik.frontend.redirect.replacement=$$1/netdata/"
       - "traefik.frontend.rule=PathPrefix:/netdata;ReplacePathRegex: ^/netdata/(.*) /$$1"
+
+  organizr:
+    image: lsiocommunity/organizr
+    environment:
+      - PUID=${USER_ID}
+      - PGID=${GROUP_ID}
+    networks:
+      - web
+    volumes:
+      - ./media/organizr:/config
+    labels:
+      - "traefik.enable=true"
+      - "traefik.port=80"
+      - "traefik.frontend.rule=PathPrefix:/"
 
   traefik:
     image: traefik
