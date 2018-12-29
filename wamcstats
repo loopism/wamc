@@ -45,7 +45,7 @@ class Notifier:
   def __init__(self, args):
     self.dryrun = args.dryrun
     self.config = yaml.load(open(CONFIG_FILE))
-    self.config["pushover"] = yaml.load(open(SECRET_CONFIG_FILE))['pushover']
+    self.config['secrets'] = yaml.load(open(SECRET_CONFIG_FILE))
 
   def maybe_notify(self):
     output = StringIO.StringIO()
@@ -84,6 +84,7 @@ class Notifier:
     logging.info('Should notify!')
 
     self._pushover_notify(notification_text)
+    self._sendgrid_notify(notification_text)
 
   def _fs_with_warning(self):
     result = []
@@ -132,7 +133,44 @@ class Notifier:
     except OSError:
       open(TIMESTAMP_FILE, 'a').close()
 
+  def _sendgrid_notify(self, msg):
+    if "sendgrid" not in self.config["secrets"]:
+      logging.info("Sendgrid secrets not configured, skipping")
+      return
+
+    if self.dryrun:
+      logging.info("DRY RUN: Would have sent sendgrid message")
+      logging.info("Sendgrid config: %s", self.config["sendgrid"])
+      logging.info("Message: %s", msg)
+      return
+
+    sendgrid_conf = self.config["secrets"]["sendgrid"]
+
+    req = json.dumps({
+      'personalizations': [
+        {'to': [{'email': sendgrid_conf["to"]}]}
+      ],
+      'from': {'email': sendgrid_conf["from"]},
+      'subject': 'Update from wamcstats',
+      'content': [{"type": "text/plain", "value": msg}],
+    })
+
+    conn = httplib.HTTPSConnection('api.sendgrid.com:443')
+    conn.request('POST', '/v3/mail/send', req, {
+      "Authorization": "Bearer %s" % sendgrid_conf["api_key"],
+      "Content-Type": "application/json",
+    })
+
+    r = conn.getresponse()
+
+    if r.status >= 300 or r.status < 200:
+      raise Exception("Sendgrid returned %d %s" % (r.status, r.reason))
+
   def _pushover_notify(self, msg):
+    if "pushover" not in self.config["secrets"]:
+      logging.info("Pushover secrets not configured, skipping")
+      return
+
     if self.dryrun:
       logging.info("DRY RUN: Would have sent pushover message")
       logging.info("Pushover config: %s", self.config["pushover"])
@@ -142,8 +180,8 @@ class Notifier:
     conn = httplib.HTTPSConnection('api.pushover.net:443')
     conn.request('POST', '/1/messages',
       urllib.urlencode({
-        'token': self.config["pushover"]["token"],
-        'user': self.config["pushover"]["user"],
+        'token': self.config["secrets"]["pushover"]["token"],
+        'user': self.config["secrets"]["pushover"]["user"],
         'message': msg,
       }), { "Content-Type": "application/x-www-form-urlencoded" })
 
