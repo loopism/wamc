@@ -14,6 +14,7 @@ import (
 	"net/url"
 	"os"
 	"os/exec"
+	"path/filepath"
 )
 
 var tmpl = template.Must(template.New("").Parse(`
@@ -23,7 +24,9 @@ Hello from {{.Hostname}} running WAMC!
 
 {{.Reboot}}
 
-DISK SPACE REPORT
+{{range .DiskSpace -}}
+* {{.}}
+{{end}}
 
 DISK SPACE WARNING
 
@@ -37,6 +40,7 @@ Sonarr is healthy.
 `))
 
 func main() {
+	os.Chdir(filepath.Dir(os.Args[0]))
 	loadConfig()
 
 	hostname, err := os.Hostname()
@@ -46,10 +50,12 @@ func main() {
 
 	tmpl.Execute(os.Stdout, struct {
 		Hostname     string
+		DiskSpace    []string
 		Reboot       string
 		SonarrIssues []string
 		Uptime       string
 	}{
+		DiskSpace:    fmtDiskSpacePartitions(),
 		Hostname:     hostname,
 		Reboot:       fmtRebootRequired(),
 		SonarrIssues: fmtSonarrHealth(),
@@ -72,13 +78,21 @@ func main() {
 	*/
 }
 
-func availability(path string) string {
-	usage := du.NewDiskUsage(path)
-	avail := (humanize.Bytes(usage.Available()))
-	return fmt.Sprintf("%s: %s Available (%%%.2f)",
-		path,
-		avail,
-		100*(1-usage.Usage()))
+func fmtDiskSpacePartitions() []string {
+	fmtDiskSpace := func(path string) string {
+		usage := du.NewDiskUsage(path)
+		avail := (humanize.Bytes(usage.Available()))
+		return fmt.Sprintf("%s: %s Available (%.2f%%)",
+			path,
+			avail,
+			100*(1-usage.Usage()))
+	}
+
+	var result []string
+	for _, path := range config.MonitoredPartitions {
+		result = append(result, fmtDiskSpace(path))
+	}
+	return result
 }
 
 type secretConfig struct {
@@ -88,20 +102,27 @@ type secretConfig struct {
 }
 
 var config struct {
-	secret secretConfig
+	MonitoredPartitions []string
+	secret              secretConfig
 }
 
 func loadConfig() {
-	file, err := os.Open("secret.json")
-	if err != nil {
-		panic(err)
+	decodeInto := func(filename string, v interface{}) {
+		file, err := os.Open(filename)
+		if err != nil {
+			panic(err)
+		}
+		defer file.Close()
+
+		decoder := json.NewDecoder(file)
+		err = decoder.Decode(&v)
+		if err != nil {
+			panic(err)
+		}
 	}
-	defer file.Close()
-	decoder := json.NewDecoder(file)
-	err = decoder.Decode(&config.secret)
-	if err != nil {
-		panic(err)
-	}
+
+	decodeInto("config.json", &config)
+	decodeInto("secret.json", &config.secret)
 }
 
 func fmtUptime() string {

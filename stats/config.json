@@ -1,0 +1,9 @@
+{
+  "MonitoredPartitions": [
+    ".",
+    "/"
+  ],
+  "MinimalFreeSpaceFraction": 0.2,
+  "HeartbeatHours": 24,
+  "AlertHours": 6
+}
