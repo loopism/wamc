@@ -1,7 +1,9 @@
 package main
 
 import (
+	"flag"
 	"html/template"
+	"log"
 	"strings"
 	"time"
 
@@ -42,7 +44,13 @@ Sonarr is healthy.
 {{end}}
 `))
 
+var (
+	heartbeatFile = flag.String("heartbeat_file", "/tmp/wamcstats", "Heartbeat file to indicate last run")
+)
+
 func main() {
+	flag.Parse()
+
 	os.Chdir(filepath.Dir(os.Args[0]))
 	loadConfig()
 
@@ -50,6 +58,23 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+
+	minimalDuration := time.Duration(config.HeartbeatHours) * time.Hour
+
+	if fmtRebootRequired() != "" || len(nearlyFullPartitions()) > 0 {
+		minimalDuration = time.Duration(config.AlertHours) * time.Hour
+		log.Printf("Alert condition, reducing notification duration")
+	}
+
+	log.Printf("Notifying if timestamp older than %s", minimalDuration)
+
+	shouldNotify := false
+
+	if timestampOlderThan(minimalDuration) {
+		shouldNotify = true
+	}
+
+	log.Print(shouldNotify)
 
 	tmpl.Execute(os.Stdout, struct {
 		Hostname             string
@@ -66,21 +91,27 @@ func main() {
 		SonarrIssues:         fmtSonarrHealth(),
 		Uptime:               fmtUptime(),
 	})
+}
 
-	/*
-		uptime, err := getUptime()
+func timestampOlderThan(d time.Duration) bool {
+	stat, err := os.Stat(*heartbeatFile)
+	if os.IsNotExist(err) {
+		f, err := os.Create(*heartbeatFile)
 		if err != nil {
 			panic(err)
 		}
-		fmt.Println(uptime)
+		f.Close()
+		return true
+	}
 
-		fmt.Println(availability("/"))
-		fmt.Println(availability("/wamc"))
+	if time.Now().Sub(stat.ModTime()) < d {
+		return false
+	}
 
-		fmt.Println()
-
-		fmt.Println(rebootMessage())
-	*/
+	if err := os.Chtimes(*heartbeatFile, time.Now(), time.Now()); err != nil {
+		panic(err)
+	}
+	return true
 }
 
 func nearlyFullPartitions() []string {
@@ -123,6 +154,8 @@ type secretConfig struct {
 var config struct {
 	MonitoredPartitions      []string
 	MinimalFreeSpaceFraction float32
+	HeartbeatHours           uint32
+	AlertHours               uint32
 
 	secret secretConfig
 }
