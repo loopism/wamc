@@ -1,6 +1,8 @@
 package main
 
 import (
+	"html/template"
+	"strings"
 	"time"
 
 	humanize "github.com/dustin/go-humanize"
@@ -14,26 +16,60 @@ import (
 	"os/exec"
 )
 
+var tmpl = template.Must(template.New("").Parse(`
+Hello from {{.Hostname}} running WAMC!
+
+{{.Uptime}}
+
+{{.Reboot}}
+
+DISK SPACE REPORT
+
+DISK SPACE WARNING
+
+{{if .SonarrIssues -}}
+Sonarr issues: {{range .SonarrIssues}}
+* {{.}}
+{{end}}
+{{else -}}
+Sonarr is healthy.
+{{end}}
+`))
+
 func main() {
 	loadConfig()
-	health, err := getSonarrHealth()
+
+	hostname, err := os.Hostname()
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println(health)
 
-	uptime, err := getUptime()
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println(uptime)
+	tmpl.Execute(os.Stdout, struct {
+		Hostname     string
+		Reboot       string
+		SonarrIssues []string
+		Uptime       string
+	}{
+		Hostname:     hostname,
+		Reboot:       fmtRebootRequired(),
+		SonarrIssues: fmtSonarrHealth(),
+		Uptime:       fmtUptime(),
+	})
 
-	fmt.Println(availability("/"))
-	fmt.Println(availability("/wamc"))
+	/*
+		uptime, err := getUptime()
+		if err != nil {
+			panic(err)
+		}
+		fmt.Println(uptime)
 
-	fmt.Println()
+		fmt.Println(availability("/"))
+		fmt.Println(availability("/wamc"))
 
-	fmt.Println(rebootMessage())
+		fmt.Println()
+
+		fmt.Println(rebootMessage())
+	*/
 }
 
 func availability(path string) string {
@@ -68,15 +104,36 @@ func loadConfig() {
 	}
 }
 
-func getUptime() (string, error) {
+func fmtUptime() string {
 	out, err := exec.Command("uptime").Output()
 	if err != nil {
-		return "", err
+		return fmt.Sprintf("ERROR: Failed to run uptime: %v", err)
 	}
-	return string(out), nil
+	return strings.TrimSpace(string(out))
 }
 
-func getSonarrHealth() ([]string, error) {
+func fmtSonarrHealth() []string {
+	issues, err := getSonarrHealth()
+	if err != nil {
+		return []string{fmt.Sprintf("Error getting Sonarr health: %v", err)}
+	}
+
+	var messages []string
+
+	for _, issue := range issues {
+		messages = append(messages, issue.Message)
+	}
+
+	return messages
+}
+
+type sonarrHealthIssue struct {
+	Type    string `json:type`
+	Message string `json:message`
+	WikiURL string `json:wikiUrl`
+}
+
+func getSonarrHealth() ([]sonarrHealthIssue, error) {
 	url, err := url.Parse("http://localhost/sonarr/api/health")
 	if err != nil {
 		panic(err)
@@ -96,13 +153,13 @@ func getSonarrHealth() ([]string, error) {
 
 	defer resp.Body.Close()
 
-	var healthItems []string
+	var healthItems []sonarrHealthIssue
 	json.NewDecoder(resp.Body).Decode(&healthItems)
 
 	return healthItems, nil
 }
 
-func rebootMessage() string {
+func fmtRebootRequired() string {
 	since, err := rebootRequiredSince()
 	if err != nil {
 		return fmt.Sprintf("WARNING: Couldn't reason about reboot: %v", err)
