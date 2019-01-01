@@ -10,8 +10,6 @@ import (
 
 	"encoding/json"
 	"fmt"
-	"net/http"
-	"net/url"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -26,15 +24,20 @@ Hello from {{.Hostname}} running WAMC!
 
 {{range .DiskSpace -}}
 * {{.}}
-{{end}}
+{{end -}}
+{{- if .NearlyFullPartitions}}
 
-DISK SPACE WARNING
-
+The following partitions are nearly full:
+{{- range .NearlyFullPartitions}}
+* {{.}}
+{{end -}}
+{{end -}}
 {{if .SonarrIssues -}}
+
 Sonarr issues: {{range .SonarrIssues}}
 * {{.}}
 {{end}}
-{{else -}}
+{{else}}
 Sonarr is healthy.
 {{end}}
 `))
@@ -49,17 +52,19 @@ func main() {
 	}
 
 	tmpl.Execute(os.Stdout, struct {
-		Hostname     string
-		DiskSpace    []string
-		Reboot       string
-		SonarrIssues []string
-		Uptime       string
+		Hostname             string
+		DiskSpace            []string
+		NearlyFullPartitions []string
+		Reboot               string
+		SonarrIssues         []string
+		Uptime               string
 	}{
-		DiskSpace:    fmtDiskSpacePartitions(),
-		Hostname:     hostname,
-		Reboot:       fmtRebootRequired(),
-		SonarrIssues: fmtSonarrHealth(),
-		Uptime:       fmtUptime(),
+		DiskSpace:            fmtDiskSpacePartitions(),
+		NearlyFullPartitions: nearlyFullPartitions(),
+		Hostname:             hostname,
+		Reboot:               fmtRebootRequired(),
+		SonarrIssues:         fmtSonarrHealth(),
+		Uptime:               fmtUptime(),
 	})
 
 	/*
@@ -76,6 +81,20 @@ func main() {
 
 		fmt.Println(rebootMessage())
 	*/
+}
+
+func nearlyFullPartitions() []string {
+	var result []string
+
+	for _, path := range config.MonitoredPartitions {
+		usage := du.NewDiskUsage(path)
+		availFrac := 1 - usage.Usage()
+		if availFrac < config.MinimalFreeSpaceFraction {
+			result = append(result, path)
+		}
+	}
+
+	return result
 }
 
 func fmtDiskSpacePartitions() []string {
@@ -102,8 +121,10 @@ type secretConfig struct {
 }
 
 var config struct {
-	MonitoredPartitions []string
-	secret              secretConfig
+	MonitoredPartitions      []string
+	MinimalFreeSpaceFraction float32
+
+	secret secretConfig
 }
 
 func loadConfig() {
@@ -131,53 +152,6 @@ func fmtUptime() string {
 		return fmt.Sprintf("ERROR: Failed to run uptime: %v", err)
 	}
 	return strings.TrimSpace(string(out))
-}
-
-func fmtSonarrHealth() []string {
-	issues, err := getSonarrHealth()
-	if err != nil {
-		return []string{fmt.Sprintf("Error getting Sonarr health: %v", err)}
-	}
-
-	var messages []string
-
-	for _, issue := range issues {
-		messages = append(messages, issue.Message)
-	}
-
-	return messages
-}
-
-type sonarrHealthIssue struct {
-	Type    string `json:type`
-	Message string `json:message`
-	WikiURL string `json:wikiUrl`
-}
-
-func getSonarrHealth() ([]sonarrHealthIssue, error) {
-	url, err := url.Parse("http://localhost/sonarr/api/health")
-	if err != nil {
-		panic(err)
-	}
-	q := url.Query()
-	q.Set("apikey", config.secret.Sonarr.ApiKey)
-	url.RawQuery = q.Encode()
-
-	resp, err := http.Get(url.String())
-	if err != nil {
-		return nil, fmt.Errorf("Failed to fetch %v: %v", url, err)
-	}
-
-	if resp.StatusCode < 200 || resp.StatusCode > 299 {
-		return nil, fmt.Errorf("Fetching %v: %s", url, resp.Status)
-	}
-
-	defer resp.Body.Close()
-
-	var healthItems []sonarrHealthIssue
-	json.NewDecoder(resp.Body).Decode(&healthItems)
-
-	return healthItems, nil
 }
 
 func fmtRebootRequired() string {
