@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"flag"
 	"html/template"
 	"log"
@@ -9,6 +10,8 @@ import (
 
 	humanize "github.com/dustin/go-humanize"
 	"github.com/ricochet2200/go-disk-usage/du"
+	sendgrid "github.com/sendgrid/sendgrid-go"
+	"github.com/sendgrid/sendgrid-go/helpers/mail"
 
 	"encoding/json"
 	"fmt"
@@ -68,15 +71,13 @@ func main() {
 
 	log.Printf("Notifying if timestamp older than %s", minimalDuration)
 
-	shouldNotify := false
-
-	if timestampOlderThan(minimalDuration) {
-		shouldNotify = true
+	if !timestampOlderThan(minimalDuration) {
+		log.Printf("Timestamp is not old enough, exiting")
+		return
 	}
 
-	log.Print(shouldNotify)
-
-	tmpl.Execute(os.Stdout, struct {
+	var msgBuf bytes.Buffer
+	if err := tmpl.Execute(&msgBuf, struct {
 		Hostname             string
 		DiskSpace            []string
 		NearlyFullPartitions []string
@@ -90,7 +91,14 @@ func main() {
 		Reboot:               fmtRebootRequired(),
 		SonarrIssues:         fmtSonarrHealth(),
 		Uptime:               fmtUptime(),
-	})
+	}); err != nil {
+		panic(err)
+	}
+
+	log.Printf("Notifying via sendgrid")
+	if err := notifySendgrid(msgBuf.String()); err != nil {
+		panic(err)
+	}
 }
 
 func timestampOlderThan(d time.Duration) bool {
@@ -145,19 +153,53 @@ func fmtDiskSpacePartitions() []string {
 	return result
 }
 
-type secretConfig struct {
-	Sonarr struct {
-		ApiKey string
-	}
-}
-
 var config struct {
 	MonitoredPartitions      []string
 	MinimalFreeSpaceFraction float32
 	HeartbeatHours           uint32
 	AlertHours               uint32
 
-	secret secretConfig
+	secret struct {
+		Sonarr struct {
+			ApiKey string
+		}
+		SendGrid struct {
+			ApiKey string
+			To     struct {
+				Name  string
+				Email string
+			}
+			From struct {
+				Name  string
+				Email string
+			}
+		}
+	}
+}
+
+func notifySendgrid(msg string) error {
+	from := mail.NewEmail(
+		config.secret.SendGrid.From.Name,
+		config.secret.SendGrid.From.Email,
+	)
+	to := mail.NewEmail(
+		config.secret.SendGrid.To.Name,
+		config.secret.SendGrid.To.Email,
+	)
+	subject := "Update from wamc/stats"
+	plainTextContent := msg
+	htmlContent := "<pre>" + plainTextContent + "</pre>"
+	message := mail.NewSingleEmail(from, subject, to, plainTextContent, htmlContent)
+	client := sendgrid.NewSendClient(config.secret.SendGrid.ApiKey)
+	response, err := client.Send(message)
+	if err != nil {
+		log.Printf("Response details from sendgrid:\n%s\n%s\n%s",
+			response.StatusCode,
+			response.Body,
+			response.Headers)
+		return err
+	}
+	return nil
 }
 
 func loadConfig() {
