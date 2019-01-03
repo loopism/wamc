@@ -1,0 +1,34 @@
+<p>Hello from {{.Hostname}} running WAMC!</p>
+
+<p>{{.Uptime}}</p>
+
+{{if .Reboot}}
+<p><b style="color: red">{{.Reboot}}</b></p>
+{{end}}
+
+<p>Disk space:</p>
+<ul>
+  {{range .DiskSpace -}}
+    <li>{{.}}</li>
+  {{end}}
+</ul>
+
+{{if .NearlyFullPartitions}}
+  <p><b>The following partitions are nearly full:</b></p>
+  <ul>
+  {{- range .NearlyFullPartitions -}}
+    <li>{{.}}</li>
+  {{- end -}}
+  </ul>
+{{- end -}}
+
+{{- if .SonarrIssues -}}
+  <p>Sonarr issues:</p>
+  <ul>
+    {{- range .SonarrIssues -}}
+      <ul>{{.}}</ul>
+    {{end}}
+  </ul>
+{{else}}
+  <p style="color: green">Sonarr is healthy.</p>
+{{end}}

@@ -20,47 +20,34 @@ import (
 	"path/filepath"
 )
 
-var tmpl = template.Must(template.New("").Parse(`
-Hello from {{.Hostname}} running WAMC!
-
-{{.Uptime}}
-
-{{.Reboot}}
-
-{{range .DiskSpace -}}
-* {{.}}
-{{end -}}
-{{- if .NearlyFullPartitions}}
-
-The following partitions are nearly full:
-{{- range .NearlyFullPartitions}}
-* {{.}}
-{{end -}}
-{{end -}}
-{{if .SonarrIssues -}}
-
-Sonarr issues: {{range .SonarrIssues}}
-* {{.}}
-{{end}}
-{{else}}
-Sonarr is healthy.
-{{end}}
-`))
-
 var (
 	heartbeatFile = flag.String("heartbeat_file", "/tmp/wamcstats", "Heartbeat file to indicate last run")
+	dryRun        = flag.String("dry_run", "", "Specify 'text' or 'html'. Just outputs to stdout rather than notifying.")
 )
 
+type templateParams struct {
+	Hostname             string
+	DiskSpace            []string
+	NearlyFullPartitions []string
+	Reboot               string
+	SonarrIssues         []string
+	Uptime               string
+}
+
 func main() {
+	check := func(err error) {
+		if err != nil {
+			panic(err)
+		}
+	}
+
 	flag.Parse()
 
 	os.Chdir(filepath.Dir(os.Args[0]))
 	loadConfig()
 
 	hostname, err := os.Hostname()
-	if err != nil {
-		panic(err)
-	}
+	check(err)
 
 	minimalDuration := time.Duration(config.HeartbeatHours) * time.Hour
 
@@ -73,37 +60,49 @@ func main() {
 
 	if !timestampOlderThan(minimalDuration) {
 		log.Printf("Timestamp is not old enough, exiting")
-		return
+		if *dryRun == "" {
+			return
+		}
+		log.Printf("Well, actually not exiting, because dry_run")
 	}
 
-	var msgBuf bytes.Buffer
-	if err := tmpl.Execute(&msgBuf, struct {
-		Hostname             string
-		DiskSpace            []string
-		NearlyFullPartitions []string
-		Reboot               string
-		SonarrIssues         []string
-		Uptime               string
-	}{
+	var htmlBuf bytes.Buffer
+	var htmlTemplate = template.Must(template.ParseFiles("template.html"))
+
+	var txtBuf bytes.Buffer
+	var txtTemplate = template.Must(template.ParseFiles("template.txt"))
+
+	params := templateParams{
 		DiskSpace:            fmtDiskSpacePartitions(),
 		NearlyFullPartitions: nearlyFullPartitions(),
 		Hostname:             hostname,
 		Reboot:               fmtRebootRequired(),
 		SonarrIssues:         fmtSonarrHealth(),
 		Uptime:               fmtUptime(),
-	}); err != nil {
-		panic(err)
 	}
 
-	log.Printf("Notifying via sendgrid")
-	if err := notifySendgrid(msgBuf.String()); err != nil {
-		panic(err)
+	check(htmlTemplate.Execute(&htmlBuf, params))
+	check(txtTemplate.Execute(&txtBuf, params))
+
+	switch *dryRun {
+	case "":
+		log.Printf("Notifying via sendgrid")
+		check(notifySendgrid(txtBuf.String(), htmlBuf.String()))
+	case "html":
+		log.Printf("Dry run, outputting HTML to stdout")
+		fmt.Println(htmlBuf.String())
+	case "text":
+		log.Printf("Dry run, outputting TXT to stdout")
+		fmt.Println(txtBuf.String())
+	default:
+		panic("Invalid dry_run setting " + *dryRun)
 	}
 }
 
 func timestampOlderThan(d time.Duration) bool {
 	stat, err := os.Stat(*heartbeatFile)
 	if os.IsNotExist(err) {
+		log.Print("Timestamp does not exist, creating")
 		f, err := os.Create(*heartbeatFile)
 		if err != nil {
 			panic(err)
@@ -112,7 +111,9 @@ func timestampOlderThan(d time.Duration) bool {
 		return true
 	}
 
-	if time.Now().Sub(stat.ModTime()) < d {
+	timestampAge := time.Now().Sub(stat.ModTime())
+	log.Printf("Timestamp age is %s", timestampAge)
+	if timestampAge < d {
 		return false
 	}
 
@@ -177,7 +178,7 @@ var config struct {
 	}
 }
 
-func notifySendgrid(msg string) error {
+func notifySendgrid(txt, html string) error {
 	from := mail.NewEmail(
 		config.secret.SendGrid.From.Name,
 		config.secret.SendGrid.From.Email,
@@ -187,9 +188,7 @@ func notifySendgrid(msg string) error {
 		config.secret.SendGrid.To.Email,
 	)
 	subject := "Update from wamc/stats"
-	plainTextContent := msg
-	htmlContent := "<pre>" + plainTextContent + "</pre>"
-	message := mail.NewSingleEmail(from, subject, to, plainTextContent, htmlContent)
+	message := mail.NewSingleEmail(from, subject, to, txt, html)
 	client := sendgrid.NewSendClient(config.secret.SendGrid.ApiKey)
 	response, err := client.Send(message)
 	if err != nil {
