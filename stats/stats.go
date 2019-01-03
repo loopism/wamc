@@ -32,6 +32,7 @@ type templateParams struct {
 	Reboot               string
 	SonarrIssues         []string
 	Uptime               string
+	URL                  string
 }
 
 func main() {
@@ -79,6 +80,7 @@ func main() {
 		Reboot:               fmtRebootRequired(),
 		SonarrIssues:         fmtSonarrHealth(),
 		Uptime:               fmtUptime(),
+		URL:                  config.secret.URL,
 	}
 
 	check(htmlTemplate.Execute(&htmlBuf, params))
@@ -161,6 +163,7 @@ var config struct {
 	AlertHours               uint32
 
 	secret struct {
+		URL    string
 		Sonarr struct {
 			ApiKey string
 		}

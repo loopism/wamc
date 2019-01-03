@@ -1,4 +1,5 @@
 Hello from {{.Hostname}} running WAMC!
+{{.URL}}
 
 {{.Uptime}}
 
