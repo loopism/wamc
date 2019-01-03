@@ -110,4 +110,3 @@ acme2.json
 
 # Authentication
 .htpasswd
-wamcstats-secret.yaml
