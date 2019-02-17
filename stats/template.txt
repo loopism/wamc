@@ -1,14 +1,4 @@
 Hello from {{.Hostname}} running WAMC!
-{{.URL}}
-
-{{.Uptime}}
-
-{{.Reboot}}
-
-Disk space:
-{{range .DiskSpace -}}
-* {{.}}
-{{end -}}
 {{- if .NearlyFullPartitions}}
 
 The following partitions are nearly full:
@@ -16,6 +6,8 @@ The following partitions are nearly full:
 * {{.}}
 {{end -}}
 {{end -}}
+
+{{.Reboot}}
 {{if .SonarrIssues -}}
 
 Sonarr issues: {{range .SonarrIssues}}
@@ -24,3 +16,10 @@ Sonarr issues: {{range .SonarrIssues}}
 {{else}}
 Sonarr is healthy.
 {{end}}
+Disk space:
+{{range .DiskSpace -}}
+* {{.}}
+{{end}}
+{{.Uptime}}
+
+{{.URL}}
