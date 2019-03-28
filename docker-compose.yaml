@@ -168,33 +168,6 @@ services:
       - "traefik.frontend.rule=PathPrefixStrip:/static"
     restart: always
 
-  netdata:
-    container_name: wamc_netdata
-    image: netdata/netdata
-    restart: always
-    hostname: wamc.lutzky.net
-    environment:
-      - PGID=999
-    networks:
-      - web
-    ports:
-      - 19999:19999
-    cap_add:
-      - SYS_PTRACE
-    security_opt:
-      - apparmor:unconfined
-    volumes:
-      - /proc:/host/proc:ro
-      - /sys:/host/sys:ro
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-    labels:
-      - "traefik.enable=true"
-      - "traefik.port=19999"
-      # Ugly hack to add a trailing slash; https://github.com/containous/traefik/issues/563
-      - "traefik.frontend.redirect.regex=^(.*)/netdata$$"
-      - "traefik.frontend.redirect.replacement=$$1/netdata/"
-      - "traefik.frontend.rule=PathPrefix:/netdata;ReplacePathRegex: ^/netdata/(.*) /$$1"
-
   organizr:
     container_name: wamc_organizr
     image: lsiocommunity/organizr
