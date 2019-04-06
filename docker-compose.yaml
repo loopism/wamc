@@ -50,6 +50,7 @@ services:
     environment:
       - PUID=${USER_ID}
       - PGID=${GROUP_ID}
+      - TZ=Europe/Dublin
     volumes:
       - ./media/tautulli:/config
       - ./media/plex/config/Library/Application\ Support/Plex\ Media\ Server/Logs:/logs:ro
