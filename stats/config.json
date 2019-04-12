@@ -1,9 +1,0 @@
-{
-  "MonitoredPartitions": [
-    "/",
-    "/mnt/LutzkyDisk"
-  ],
-  "MinimalFreeSpaceFraction": 0.2,
-  "HeartbeatHours": 24,
-  "AlertHours": 6
-}

@@ -1,8 +1,0 @@
-github.com/dustin/go-humanize v1.0.0 h1:VSnTsYCnlFHaM2/igO1h6X3HA71jcobQuxemgkq4zYo=
-github.com/dustin/go-humanize v1.0.0/go.mod h1:HtrtbFcZ19U5GC7JDqmcUSB87Iq5E25KnS6fMYU6eOk=
-github.com/ricochet2200/go-disk-usage v0.0.0-20150921141558-f0d1b743428f h1:w4VLAgWDnrcBDFSi8Ppn/MrB/Z1A570+MV90CvMtVVA=
-github.com/ricochet2200/go-disk-usage v0.0.0-20150921141558-f0d1b743428f/go.mod h1:yhevTRDiduxPJHQDCtlqUn53ojFPkRh/mKhMUzQUCpc=
-github.com/sendgrid/rest v2.4.1+incompatible h1:HDib/5xzQREPq34lN3YMhQtMkdXxS/qLp5G3k9a5++4=
-github.com/sendgrid/rest v2.4.1+incompatible/go.mod h1:kXX7q3jZtJXK5c5qK83bSGMdV6tsOE70KbHoqJls4lE=
-github.com/sendgrid/sendgrid-go v3.4.1+incompatible h1:jkXet0CDmdaMZctaF5qELIAFM7eeUx1nh3kMvLejAXk=
-github.com/sendgrid/sendgrid-go v3.4.1+incompatible/go.mod h1:QRQt+LX/NmgVEvmdRw0VT/QgUn499+iza2FnDca9fg8=
