@@ -144,18 +144,20 @@ services:
       - PGID=${GROUP_ID}
     restart: always
 
-  duc:
-    container_name: wamc_duc
-    image: digitalman2112/duc
-    volumes:
-      - ./media/sonarr/series:/data/series:ro
-      - ./media/radarr/movies:/data/movies:ro
-    labels:
-      - "traefik.enable=true"
-      - "traefik.frontend.rule=PathPrefix:/cgi-bin/duc.cgi"
-    restart: always
+  webdu:
+    container_name: wamc_webdu
+    image: lutzky/webdu
     networks:
       - web
+    volumes:
+      - .:/data:ro
+    command:
+      - "--base_path=/data"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.frontend.rule=PathPrefixStrip:/webdu"
+      - "traefik.port=8099"
+    restart: always
 
   static:
     container_name: wamc_static
