@@ -144,18 +144,33 @@ services:
       - PGID=${GROUP_ID}
     restart: always
 
-  webdu:
-    container_name: wamc_webdu
+  webdu-movies:
+    container_name: wamc_webdu_movies
     image: lutzky/webdu
     networks:
       - web
     volumes:
-      - .:/data:ro
+      - ./media/radarr/movies/:/data:ro
     command:
       - "--base_path=/data"
     labels:
       - "traefik.enable=true"
-      - "traefik.frontend.rule=PathPrefixStrip:/webdu"
+      - "traefik.frontend.rule=PathPrefixStrip:/webdu/movies"
+      - "traefik.port=8099"
+    restart: always
+
+  webdu-series:
+    container_name: wamc_webdu_series
+    image: lutzky/webdu
+    networks:
+      - web
+    volumes:
+      - ./media/sonarr/series/:/data:ro
+    command:
+      - "--base_path=/data"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.frontend.rule=PathPrefixStrip:/webdu/series"
       - "traefik.port=8099"
     restart: always
 
