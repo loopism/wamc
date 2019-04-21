@@ -188,7 +188,7 @@ services:
 
   organizr:
     container_name: wamc_organizr
-    image: lsiocommunity/organizr
+    image: organizrtools/organizr-v2
     restart: always
     environment:
       - PUID=${USER_ID}
@@ -196,7 +196,7 @@ services:
     networks:
       - web
     volumes:
-      - ./media/organizr:/config
+      - ./media/organizr-v2:/config
     labels:
       - "traefik.enable=true"
       - "traefik.port=80"
