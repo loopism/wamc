@@ -174,18 +174,6 @@ services:
       - "traefik.port=8099"
     restart: always
 
-  static:
-    container_name: wamc_static
-    image: nginx
-    networks:
-      - web
-    volumes:
-      - ./static/:/usr/share/nginx/html:ro
-    labels:
-      - "traefik.enable=true"
-      - "traefik.frontend.rule=PathPrefixStrip:/static"
-    restart: always
-
   organizr:
     container_name: wamc_organizr
     image: organizrtools/organizr-v2
