@@ -13,6 +13,7 @@ services:
       - ./media/radarr/movies:/data/movies
       - ./media/sonarr/series:/data/tvshows
       - ./media/plex/config/:/config
+      - ./media/plex/transcode/:/transcode
     depends_on:
       - sonarr
       - radarr
