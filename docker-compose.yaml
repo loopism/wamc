@@ -175,6 +175,18 @@ services:
       - "traefik.port=80"
       - "traefik.frontend.rule=PathPrefix:/"
 
+  sonarr_webhook:
+    container_name: wamc_sonarr_webhook
+    image: lutzky/sonarr-webhook
+    restart: always
+    environment:
+      - SMTP_PASSWORD=${SMTP_PASSWORD}
+      - SMTP_USERNAME=${SMTP_USERNAME}
+      - SMTP_SERVER=${SMTP_SERVER}
+      - SMTP_FROM=${SMTP_FROM}
+    networks:
+      - web
+
   traefik:
     image: traefik
     restart: always
