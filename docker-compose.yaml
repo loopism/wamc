@@ -43,26 +43,6 @@ services:
       - "traefik.frontend.redirect.replacement=$$1/filebrowser/"
       - "traefik.frontend.rule=PathPrefix:/filebrowser;ReplacePathRegex: ^/netdata/(.*) /$$1"
 
-  tautulli:
-    container_name: wamc_tautulli
-    image: linuxserver/tautulli:latest
-    networks:
-      - web
-    environment:
-      - PUID=${USER_ID}
-      - PGID=${GROUP_ID}
-      - TZ=Europe/Dublin
-    volumes:
-      - ./media/tautulli:/config
-      - ./media/plex/config/Library/Application\ Support/Plex\ Media\ Server/Logs:/logs:ro
-    labels:
-      - "traefik.enable=true"
-      - "traefik.frontend.rule=PathPrefix:/tautulli"
-      - "traefik.port=8181"
-    depends_on:
-      - plex
-    restart: always
-
   transmission:
     container_name: wamc_transmission
     image: linuxserver/transmission:latest
