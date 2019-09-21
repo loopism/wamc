@@ -87,6 +87,24 @@ services:
       - transmission
     restart: always
 
+  bazarr:
+    container_name: wamc_bazarr
+    image: linuxserver/bazarr:latest
+    networks:
+      - web
+    labels:
+      - "traefik.enable=true"
+      - "traefik.frontend.rule=PathPrefix:/bazarr"
+      - "traefik.port=6767"
+    volumes:
+      - ./media/bazarr/config:/config
+      - ./media/sonarr/series:/tv
+      - ./media/radarr/movies:/movies
+    environment:
+      - PUID=${USER_ID}
+      - PGID=${GROUP_ID}
+    restart: always
+
   radarr:
     container_name: wamc_radarr
     image: linuxserver/radarr:latest
