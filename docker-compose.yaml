@@ -189,7 +189,7 @@ services:
       - web
 
   traefik:
-    image: traefik
+    image: traefik:v1.7
     restart: always
     ports:
       - "8111:80"
@@ -204,7 +204,7 @@ services:
       - ./.htpasswd:/.htpasswd
     container_name: traefik
   traefik_local:
-    image: traefik
+    image: traefik:v1.7
     restart: always
     ports:
       - "80:80"
