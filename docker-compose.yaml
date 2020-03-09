@@ -19,9 +19,6 @@ services:
       - ./media/plex/transcode/:/transcode
     devices:
       - /dev/dri:/dev/dri
-    depends_on:
-      - sonarr
-      - radarr
     restart: always
 
   filebrowser:
@@ -86,8 +83,6 @@ services:
     environment:
       - PUID=${USER_ID}
       - PGID=${GROUP_ID}
-    depends_on:
-      - transmission
     restart: always
 
   bazarr:
@@ -126,8 +121,6 @@ services:
     environment:
       - PUID=${USER_ID}
       - PGID=${GROUP_ID}
-    depends_on:
-      - transmission
     restart: always
 
   # Proxy to a bunch of public trackers
