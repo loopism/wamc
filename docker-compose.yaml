@@ -4,8 +4,6 @@ services:
   plex:
     container_name: wamc_plex
     image: plexinc/pms-docker:latest
-    networks:
-      - web
     ports:
       - 32400:32400
     environment:
@@ -25,8 +23,6 @@ services:
     container_name: wamc_filebrowser
     image: filebrowser/filebrowser:v1.10.0
     restart: always
-    networks:
-      - web
     volumes:
       - ./filebrowser/database.db:/database.db
       - ./media/:/srv
@@ -48,8 +44,6 @@ services:
   transmission:
     container_name: wamc_transmission
     image: linuxserver/transmission:latest
-    networks:
-      - web
     environment:
       - PUID=${USER_ID}
       - PGID=${GROUP_ID}
@@ -68,8 +62,6 @@ services:
   sonarr:
     container_name: wamc_sonarr
     image: linuxserver/sonarr:latest
-    networks:
-      - web
     labels:
       - "traefik.enable=true"
       - "traefik.frontend.rule=PathPrefix:/sonarr"
@@ -88,8 +80,6 @@ services:
   bazarr:
     container_name: wamc_bazarr
     image: linuxserver/bazarr:latest
-    networks:
-      - web
     labels:
       - "traefik.enable=true"
       - "traefik.frontend.rule=PathPrefix:/bazarr"
@@ -106,8 +96,6 @@ services:
   radarr:
     container_name: wamc_radarr
     image: linuxserver/radarr:latest
-    networks:
-      - web
     labels:
       - "traefik.enable=true"
       - "traefik.frontend.rule=PathPrefix:/radarr"
@@ -127,8 +115,6 @@ services:
   jackett:
     container_name: wamc_jackett
     image: linuxserver/jackett:latest
-    networks:
-      - web
     labels:
       - "traefik.enable=true"
       - "traefik.frontend.rule=PathPrefix:/jackett"
@@ -144,8 +130,6 @@ services:
   webdu:
     container_name: wamc_webdu
     image: lutzky/webdu
-    networks:
-      - web
     volumes:
       - .:/data:ro
     command:
@@ -163,8 +147,6 @@ services:
     environment:
       - PUID=${USER_ID}
       - PGID=${GROUP_ID}
-    networks:
-      - web
     volumes:
       - ./media/organizr-v2:/config
     labels:
@@ -181,8 +163,6 @@ services:
       - SMTP_USERNAME=${SMTP_USERNAME}
       - SMTP_SERVER=${SMTP_SERVER}
       - SMTP_FROM=${SMTP_FROM}
-    networks:
-      - web
 
   traefik:
     image: traefik:v1.7
@@ -191,8 +171,6 @@ services:
       - "8111:80"
       - "8112:443"
       - "8113:8080"
-    networks:
-      - web
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./traefik.toml:/traefik.toml
@@ -205,12 +183,7 @@ services:
     ports:
       - "80:80"
       - "8080:8080"
-    networks:
-      - web
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./traefik_local.toml:/traefik.toml
     container_name: traefik_local
-
-networks:
-  web:
