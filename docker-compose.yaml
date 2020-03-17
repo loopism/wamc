@@ -169,7 +169,7 @@ services:
       - "443:443"
       - "8080:8080"
     command:
-      - --accesslog
+      - --accesslog.filePath=/logs/access.log
       - --api.insecure=true
       - --global.sendanonymoususage=false
       - --providers.docker
@@ -194,4 +194,5 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./.htpasswd:/.htpasswd
       - ./acme.json:/acme.json
+      - ./traefik-logs:/logs
     container_name: traefik

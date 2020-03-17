@@ -110,3 +110,6 @@ acme2.json
 
 # Authentication
 .htpasswd
+
+# Logs
+traefik-logs/
