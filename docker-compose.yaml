@@ -26,8 +26,8 @@ services:
     volumes:
       - ./filebrowser/database.db:/database.db
       - ./media/:/srv
-    ports:
-      - 1111:80
+    expose:
+      - 80
     command:
       - --port=80
       - --database=/database.db
@@ -35,11 +35,9 @@ services:
       - --baseurl=/filebrowser
       - --no-auth
     labels:
-      - "traefik.enable=true"
-      # Ugly hack to add a trailing slash; https://github.com/containous/traefik/issues/563
-      - "traefik.frontend.redirect.regex=^(.*)/filebrowser$$"
-      - "traefik.frontend.redirect.replacement=$$1/filebrowser/"
-      - "traefik.frontend.rule=PathPrefix:/filebrowser;ReplacePathRegex: ^/netdata/(.*) /$$1"
+      traefik.enable: true
+      traefik.http.routers.filebrowser.entrypoints: web-secure, web-local
+      traefik.http.routers.filebrowser.rule: PathPrefix(`/filebrowser`)
 
   transmission:
     container_name: wamc_transmission
@@ -52,20 +50,18 @@ services:
       - ./media/transmission/config/:/config
       - ./media/transmission/downloads/:/downloads
     labels:
-      - "traefik.enable=true"
-      - "traefik.frontend.redirect.regex=^(.*)/transmission/(web)?$$"
-      - "traefik.frontend.redirect.replacement=$$1/transmission/web/"
-      - "traefik.frontend.rule=PathPrefix:/transmission"
-      - "traefik.port=9091"
+      traefik.enable: true
+      traefik.http.routers.transmission.entrypoints: web-secure, web-local
+      traefik.http.routers.transmission.rule: PathPrefix(`/transmission`)
     restart: always
 
   sonarr:
     container_name: wamc_sonarr
     image: linuxserver/sonarr:latest
     labels:
-      - "traefik.enable=true"
-      - "traefik.frontend.rule=PathPrefix:/sonarr"
-      - "traefik.port=8989"
+      traefik.enable: true
+      traefik.http.routers.sonarr.entrypoints: web-secure, web-local
+      traefik.http.routers.sonarr.rule: PathPrefix(`/sonarr`)
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /dev/rtc:/dev/rtc:ro
@@ -81,9 +77,9 @@ services:
     container_name: wamc_bazarr
     image: linuxserver/bazarr:latest
     labels:
-      - "traefik.enable=true"
-      - "traefik.frontend.rule=PathPrefix:/bazarr"
-      - "traefik.port=6767"
+      traefik.enable: true
+      traefik.http.routers.bazarr.entrypoints: web-secure, web-local
+      traefik.http.routers.bazarr.rule: PathPrefix(`/bazarr`)
     volumes:
       - ./media/bazarr/config:/config
       - ./media/sonarr/series:/tv
@@ -97,9 +93,9 @@ services:
     container_name: wamc_radarr
     image: linuxserver/radarr:latest
     labels:
-      - "traefik.enable=true"
-      - "traefik.frontend.rule=PathPrefix:/radarr"
-      - "traefik.port=7878"
+      traefik.enable: true
+      traefik.http.routers.radarr.entrypoints: web-secure, web-local
+      traefik.http.routers.radarr.rule: PathPrefix(`/radarr`)
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /dev/rtc:/dev/rtc:ro
@@ -116,9 +112,9 @@ services:
     container_name: wamc_jackett
     image: linuxserver/jackett:latest
     labels:
-      - "traefik.enable=true"
-      - "traefik.frontend.rule=PathPrefix:/jackett"
-      - "traefik.port=9117"
+      traefik.enable: true
+      traefik.http.routers.jackett.entrypoints: web-secure, web-local
+      traefik.http.routers.jackett.rule: PathPrefix(`/jackett`)
     volumes:
       - ./media/jackett/config/:/config
       - ./media/transmission/downloads/:/downloads
@@ -135,9 +131,9 @@ services:
     command:
       - "--base_path=/data"
     labels:
-      - "traefik.enable=true"
-      - "traefik.frontend.rule=PathPrefixStrip:/webdu"
-      - "traefik.port=8099"
+      traefik.enable: true
+      traefik.http.routers.webdu.entrypoints: web-secure, web-local
+      traefik.http.routers.webdu.rule: PathPrefix(`/webdu`)
     restart: always
 
   organizr:
@@ -150,9 +146,9 @@ services:
     volumes:
       - ./media/organizr-v2:/config
     labels:
-      - "traefik.enable=true"
-      - "traefik.port=80"
-      - "traefik.frontend.rule=PathPrefix:/"
+      traefik.enable: true
+      traefik.http.routers.organizr.entrypoints: web-secure, web-local
+      traefik.http.routers.organizr.rule: PathPrefix(`/`)
 
   sonarr_webhook:
     container_name: wamc_sonarr_webhook
@@ -165,25 +161,37 @@ services:
       - SMTP_FROM=${SMTP_FROM}
 
   traefik:
-    image: traefik:v1.7
-    restart: always
-    ports:
-      - "8111:80"
-      - "8112:443"
-      - "8113:8080"
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - ./traefik.toml:/traefik.toml
-      - ./acme.json:/acme.json
-      - ./.htpasswd:/.htpasswd
-    container_name: traefik
-  traefik_local:
-    image: traefik:v1.7
+    image: traefik:v2.2
     restart: always
     ports:
       - "80:80"
+      - "81:81"
+      - "443:443"
       - "8080:8080"
+    command:
+      - --accesslog
+      - --api.insecure=true
+      - --global.sendanonymoususage=false
+      - --providers.docker
+      - --providers.docker.exposedbydefault=false
+      - --entrypoints.web-https-redirector.address=:81
+      - --entrypoints.web-https-redirector.http.redirections.entryPoint.to=web-secure
+      - --entrypoints.web-https-redirector.http.redirections.entryPoint.scheme=https
+      - --entrypoints.web-secure.http.middlewares=auth@docker
+      - --entrypoints.web-secure.http.tls=true
+      - --entrypoints.web-secure.http.tls.certResolver=acme-wamc
+      - --entrypoints.web-secure.http.tls.domains[0].main=${DOMAIN_MAIN}
+      - --entrypoints.web-secure.address=:443
+      - --entrypoints.web-local.address=:80
+
+      - --certificatesResolvers.acme-wamc.acme.email=lutzky@gmail.com
+      - --certificatesResolvers.acme-wamc.acme.storage=/acme.json
+      - --certificatesResolvers.acme-wamc.acme.httpChallenge.entryPoint=web-https-redirector
+    labels:
+      traefik.enable: true
+      traefik.http.middlewares.auth.basicauth.usersfile: /.htpasswd
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - ./traefik_local.toml:/traefik.toml
-    container_name: traefik_local
+      - ./.htpasswd:/.htpasswd
+      - ./acme.json:/acme.json
+    container_name: traefik

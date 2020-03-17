@@ -16,6 +16,7 @@ This is configured so that access is possible both locally and remotely; e.g. ev
   ```
   USER_ID=[user id for user you just created]
   GROUP_ID=[group id for user you just created]
+  DOMAIN=[your domain for letsencrypt purposes]
   ```
 - create a media folder in docker-compose's folder with $USER_ID:$GROUP_ID ownership
 - get your Plex claim token at https://www.plex.tv/claim/
