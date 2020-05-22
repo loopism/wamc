@@ -9,6 +9,7 @@ services:
     environment:
       - PLEX_UID=${USER_ID}
       - PLEX_GID=${GROUP_ID}
+      - ADVERTISE_IP=http://${LOCAL_STATIC_IP}:32400,https://${DOMAIN_MAIN}:${PLEX_EXT_PORT}
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - ./media/radarr/movies:/data/movies
