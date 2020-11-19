@@ -137,19 +137,16 @@ services:
       traefik.http.routers.webdu.rule: PathPrefix(`/webdu`)
     restart: always
 
-  organizr:
-    container_name: wamc_organizr
-    image: organizrtools/organizr-v2
-    restart: always
-    environment:
-      - PUID=${USER_ID}
-      - PGID=${GROUP_ID}
+  static:
+    container_name: wamc_static
+    image: nginx
     volumes:
-      - ./media/organizr-v2:/config
+      - ./static/:/usr/share/nginx/html:ro
     labels:
       traefik.enable: true
       traefik.http.routers.organizr.entrypoints: web-secure, web-local
       traefik.http.routers.organizr.rule: PathPrefix(`/`)
+    restart: always
 
   sonarr_webhook:
     container_name: wamc_sonarr_webhook
