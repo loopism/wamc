@@ -42,7 +42,7 @@ services:
 
   transmission:
     container_name: wamc_transmission
-    image: linuxserver/transmission:latest
+    image: ghcr.io/linuxserver/transmission:latest
     environment:
       - PUID=${USER_ID}
       - PGID=${GROUP_ID}
@@ -58,7 +58,7 @@ services:
 
   sonarr:
     container_name: wamc_sonarr
-    image: linuxserver/sonarr:latest
+    image: ghcr.io/linuxserver/sonarr:latest
     labels:
       traefik.enable: true
       traefik.http.routers.sonarr.entrypoints: web-secure, web-local
@@ -76,7 +76,7 @@ services:
 
   bazarr:
     container_name: wamc_bazarr
-    image: linuxserver/bazarr:latest
+    image: ghcr.io/linuxserver/bazarr:latest
     labels:
       traefik.enable: true
       traefik.http.routers.bazarr.entrypoints: web-secure, web-local
@@ -92,7 +92,7 @@ services:
 
   radarr:
     container_name: wamc_radarr
-    image: linuxserver/radarr:latest
+    image: ghcr.io/linuxserver/radarr:latest
     labels:
       traefik.enable: true
       traefik.http.routers.radarr.entrypoints: web-secure, web-local
@@ -111,7 +111,7 @@ services:
   # Proxy to a bunch of public trackers
   jackett:
     container_name: wamc_jackett
-    image: linuxserver/jackett:latest
+    image: ghcr.io/linuxserver/jackett:latest
     labels:
       traefik.enable: true
       traefik.http.routers.jackett.entrypoints: web-secure, web-local
