@@ -58,9 +58,7 @@
                 <span><a href="https://app.plex.tv">Plex</a></span>
                 <span class="mdl-list__item-text-body"> Plex lets you stream the
                   media we have. If this doesn't work, try
-                  <a href="http://wamc.lutzky.net:21518">direct plex</a>
-                  from outside the network, or
-                  <a href="http://192.168.86.35:32400">local plex</a> from inside
+                  <a href="#" data-localport="32400">local plex</a> from inside
                   the home network.
                 </span>
               </span>
@@ -176,9 +174,26 @@
                 </span>
               </span>
             </li>
+            <li class="mdl-list__item mdl-list__item--three-line">
+              <span class="mdl-list__item-primary-content">
+                <i class="mdl-list__item-avatar material-icons">speed</i>
+                <span><a data-localport="8082" href="#">SpeedTest</a></span>
+                <span class="mdl-list__item-text-body">
+                  Test speed of connection to this server (home network only)
+                </span>
+              </span>
+            </li>
           </ul>
         </div>
       </div>
+      <script>
+        Array.from(document.getElementsByTagName('a')).forEach(function(e) {
+          if (e.dataset.localport) {
+            e.href = '';
+            e.port = e.dataset.localport;
+          }
+        });
+      </script>
       </main>
       <footer class="demo-footer mdl-mini-footer">
         <div class="mdl-mini-footer--left-section">
