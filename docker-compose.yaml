@@ -14,6 +14,7 @@ services:
       - /etc/localtime:/etc/localtime:ro
       - ./media/radarr/movies:/data/movies
       - ./media/sonarr/series:/data/tvshows
+      - ./media/prerolls:/data/prerolls
       - ./media/plex/config/:/config
       - ./media/plex/transcode/:/transcode
     devices:
