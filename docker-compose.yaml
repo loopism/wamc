@@ -12,9 +12,7 @@ services:
       - ADVERTISE_IP=http://${LOCAL_STATIC_IP}:32400,https://${DOMAIN_MAIN}:${PLEX_EXT_PORT}
     volumes:
       - /etc/localtime:/etc/localtime:ro
-      - ./media/radarr/movies:/data/movies
-      - ./media/sonarr/series:/data/tvshows
-      - ./media/prerolls:/data/prerolls
+      - ./data:/data
       - ./media/plex/config/:/config
       - ./media/plex/transcode/:/transcode
     devices:
@@ -50,7 +48,7 @@ services:
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - ./media/transmission/config/:/config
-      - ./media/transmission/downloads/:/downloads
+      - ./data/torrents:/data/torrents
     labels:
       traefik.enable: true
       traefik.http.routers.transmission.entrypoints: web-secure, web-local
@@ -67,9 +65,8 @@ services:
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /dev/rtc:/dev/rtc:ro
-      - ./media/sonarr/series:/tv
       - ./media/sonarr/config:/config
-      - ./media/transmission/downloads/:/downloads
+      - ./data:/data
     environment:
       - PUID=${USER_ID}
       - PGID=${GROUP_ID}
@@ -84,8 +81,7 @@ services:
       traefik.http.routers.bazarr.rule: PathPrefix(`/bazarr`)
     volumes:
       - ./media/bazarr/config:/config
-      - ./media/sonarr/series:/tv
-      - ./media/radarr/movies:/movies
+      - ./data/media:/data/media
     environment:
       - PUID=${USER_ID}
       - PGID=${GROUP_ID}
@@ -101,9 +97,8 @@ services:
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /dev/rtc:/dev/rtc:ro
-      - ./media/radarr/movies:/movies
       - ./media/radarr/config:/config
-      - ./media/transmission/downloads/:/downloads
+      - ./data:/data
     environment:
       - PUID=${USER_ID}
       - PGID=${GROUP_ID}
