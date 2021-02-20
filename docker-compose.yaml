@@ -131,6 +131,8 @@ services:
       traefik.enable: true
       traefik.http.routers.webdu.entrypoints: web-secure, web-local
       traefik.http.routers.webdu.rule: PathPrefix(`/webdu`)
+      traefik.http.routers.webdu.middlewares: webdu-stripprefix
+      traefik.http.middlewares.webdu-stripprefix.stripprefix.prefixes: /webdu
     restart: always
 
   speedtest:
