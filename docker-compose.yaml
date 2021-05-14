@@ -149,9 +149,22 @@ services:
       - ./static/:/usr/share/nginx/html:ro
     labels:
       traefik.enable: true
-      traefik.http.routers.organizr.entrypoints: web-secure, web-local
-      traefik.http.routers.organizr.rule: PathPrefix(`/`)
+      # traefik.http.routers.organizr.entrypoints: web-secure, web-local
+      # traefik.http.routers.organizr.rule: PathPrefix(`/`)
     restart: always
+
+  homer:
+    container_name: wamc_homer
+    image: b4bz/homer:latest
+    environment:
+      - UID=${USER_ID}
+      - GID=${GROUP_ID}
+    volumes:
+      - ./homer/:/www/assets:ro
+    labels:
+      traefik.enable: true
+      traefik.http.routers.homer.entrypoints: web-secure, web-local
+      traefik.http.routers.homer.rule: PathPrefix(`/`)
 
   traefik:
     image: traefik:v2.2
