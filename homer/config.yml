@@ -85,7 +85,7 @@ services:
         subtitle: "Follow TV shows and send to download"
         url: "/sonarr"
       - name: "Radarr"
-        logo: "assets/icons/radarr.svg"
+        logo: "assets/icons/radarr.png"
         subtitle: "Follow movies and send to download"
         url: "/radarr"
       - name: "Bazarr"
