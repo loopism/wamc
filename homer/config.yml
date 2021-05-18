@@ -131,5 +131,9 @@ services:
         icon: "fas fa-bell"
       - name: "SpeedTest"
         subtitle: "Test speed of connection to this server (home network only)"
-        url: "http://michael:8082"  # TODO this uses data-localport
+        url: "http://michael:8082"
         icon: "fas fa-tachometer-alt"
+      - name: "Traefik"
+        subtitle: "Load balancer"
+        url: "http://michael:8080"
+        logo: "assets/icons/traefik.png"
