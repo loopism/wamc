@@ -197,9 +197,6 @@ services:
       - --entrypoints.web-https-redirector.http.redirections.entryPoint.to=web-secure
       - --entrypoints.web-https-redirector.http.redirections.entryPoint.scheme=https
       - --entrypoints.web-secure.http.middlewares=auth@docker
-      - --entrypoints.web-secure.http.tls=true
-      - --entrypoints.web-secure.http.tls.certResolver=acme-wamc
-      - --entrypoints.web-secure.http.tls.domains[0].main=${DOMAIN_MAIN}
       - --entrypoints.web-secure.address=:443
       - --entrypoints.web-local.address=:80
 
