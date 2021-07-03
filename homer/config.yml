@@ -110,10 +110,6 @@ services:
         icon: "fas fa-server"
         subtitle: "Disk usage analyzer; what's taking up all the space?"
         url: "/webdu"
-      - name: "FileBrowser"
-        logo: "assets/icons/filebrowser.svg"
-        subtitle: "For deleting and downloading files"
-        url: "/filebrowser"
   - name: "Monitoring"
     icon: "fas fa-heartbeat"
     items:

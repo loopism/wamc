@@ -11,7 +11,6 @@ This is configured so that access is possible both locally and remotely; e.g. ev
 - create a [Plex accout](https://www.plex.tv/)
 - clone this repository
 - create a user for your media server.
-- run `./setup.sh`
 - create a file in this repository called `.env` (it will be ignored by git) with the following contents:
   ```
   USER_ID=[user id for user you just created]

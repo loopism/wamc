@@ -22,26 +22,6 @@ services:
       - /dev/dri:/dev/dri
     restart: always
 
-  filebrowser:
-    container_name: wamc_filebrowser
-    image: filebrowser/filebrowser:v1.10.0
-    restart: always
-    volumes:
-      - ./filebrowser/database.db:/database.db
-      - ./data/:/srv
-    expose:
-      - 80
-    command:
-      - --port=80
-      - --database=/database.db
-      - --scope=/srv
-      - --baseurl=/filebrowser
-      - --no-auth
-    labels:
-      traefik.enable: true
-      traefik.http.routers.filebrowser.entrypoints: web-secure, web-local
-      traefik.http.routers.filebrowser.rule: PathPrefix(`/filebrowser`)
-
   transmission:
     container_name: wamc_transmission
     image: ghcr.io/linuxserver/transmission:latest
