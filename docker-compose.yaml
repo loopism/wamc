@@ -183,7 +183,6 @@ services:
     image: traefik:v2.2
     restart: always
     ports:
-      - "80:80"
       - "81:81"
       - "443:443"
       - "8080:8080"
@@ -198,7 +197,6 @@ services:
       - --entrypoints.web-https-redirector.http.redirections.entryPoint.scheme=https
       - --entrypoints.web-secure.http.middlewares=auth@docker
       - --entrypoints.web-secure.address=:443
-      - --entrypoints.web-local.address=:80
 
       - --certificatesResolvers.acme-wamc.acme.email=lutzky@gmail.com
       - --certificatesResolvers.acme-wamc.acme.storage=/acme.json
