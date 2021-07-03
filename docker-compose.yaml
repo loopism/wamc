@@ -34,8 +34,9 @@ services:
       - ./data/torrents:/data/torrents
     labels:
       traefik.enable: true
-      traefik.http.routers.transmission.entrypoints: web-secure, web-local
-      traefik.http.routers.transmission.rule: PathPrefix(`/transmission`)
+      traefik.http.routers.transmission.rule: >-
+        Host(`${DOMAIN_MAIN}`) && PathPrefix(`/transmission`)
+      traefik.http.routers.transmission.tls.certresolver: acme-wamc
       com.centurylinklabs.watchtower.enable: true
     restart: always
 
@@ -44,8 +45,9 @@ services:
     image: ghcr.io/linuxserver/sonarr:latest
     labels:
       traefik.enable: true
-      traefik.http.routers.sonarr.entrypoints: web-secure, web-local
-      traefik.http.routers.sonarr.rule: PathPrefix(`/sonarr`)
+      traefik.http.routers.sonarr.rule: >-
+        Host(`${DOMAIN_MAIN}`) && PathPrefix(`/sonarr`)
+      traefik.http.routers.sonarr.tls.certresolver: acme-wamc
       com.centurylinklabs.watchtower.enable: true
     volumes:
       - /etc/localtime:/etc/localtime:ro
@@ -62,8 +64,9 @@ services:
     image: ghcr.io/linuxserver/bazarr:latest
     labels:
       traefik.enable: true
-      traefik.http.routers.bazarr.entrypoints: web-secure, web-local
-      traefik.http.routers.bazarr.rule: PathPrefix(`/bazarr`)
+      traefik.http.routers.bazarr.rule: >-
+        Host(`${DOMAIN_MAIN}`) && PathPrefix(`/bazarr`)
+      traefik.http.routers.bazarr.tls.certresolver: acme-wamc
       com.centurylinklabs.watchtower.enable: true
     volumes:
       - ./media/bazarr/config:/config
@@ -78,8 +81,9 @@ services:
     image: ghcr.io/linuxserver/radarr:latest
     labels:
       traefik.enable: true
-      traefik.http.routers.radarr.entrypoints: web-secure, web-local
-      traefik.http.routers.radarr.rule: PathPrefix(`/radarr`)
+      traefik.http.routers.radarr.rule: >-
+        Host(`${DOMAIN_MAIN}`) && PathPrefix(`/radarr`)
+      traefik.http.routers.radarr.tls.certresolver: acme-wamc
       com.centurylinklabs.watchtower.enable: true
     volumes:
       - /etc/localtime:/etc/localtime:ro
@@ -97,8 +101,9 @@ services:
     image: ghcr.io/linuxserver/jackett:latest
     labels:
       traefik.enable: true
-      traefik.http.routers.jackett.entrypoints: web-secure, web-local
-      traefik.http.routers.jackett.rule: PathPrefix(`/jackett`)
+      traefik.http.routers.jackett.rule: >-
+        Host(`${DOMAIN_MAIN}`) && PathPrefix(`/jackett`)
+      traefik.http.routers.jackett.tls.certresolver: acme-wamc
       com.centurylinklabs.watchtower.enable: true
     volumes:
       - ./media/jackett/config/:/config
@@ -117,8 +122,9 @@ services:
       - "--base_path=/data"
     labels:
       traefik.enable: true
-      traefik.http.routers.webdu.entrypoints: web-secure, web-local
-      traefik.http.routers.webdu.rule: PathPrefix(`/webdu`)
+      traefik.http.routers.webdu.rule: >-
+        Host(`${DOMAIN_MAIN}`) && PathPrefix(`/webdu`)
+      traefik.http.routers.webdu.tls.certresolver: acme-wamc
       traefik.http.routers.webdu.middlewares: webdu-stripprefix
       traefik.http.middlewares.webdu-stripprefix.stripprefix.prefixes: /webdu
       com.centurylinklabs.watchtower.enable: true
@@ -157,8 +163,9 @@ services:
       - ./homer/:/www/assets:ro
     labels:
       traefik.enable: true
-      traefik.http.routers.homer.entrypoints: web-secure, web-local
-      traefik.http.routers.homer.rule: PathPrefix(`/`)
+      traefik.http.routers.homer.rule: >-
+        Host(`${DOMAIN_MAIN}`) && PathPrefix(`/`)
+      traefik.http.routers.homer.tls.certresolver: acme-wamc
 
   watchtower:
     container_name: watchtower
