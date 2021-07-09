@@ -37,6 +37,7 @@ services:
       traefik.http.routers.transmission.rule: >-
         Host(`${DOMAIN_MAIN}`) && PathPrefix(`/transmission`)
       traefik.http.routers.transmission.tls.certresolver: acme-wamc
+      traefik.http.routers.transmission.middlewares: auth@docker
       com.centurylinklabs.watchtower.enable: true
     restart: always
 
@@ -48,6 +49,7 @@ services:
       traefik.http.routers.sonarr.rule: >-
         Host(`${DOMAIN_MAIN}`) && PathPrefix(`/sonarr`)
       traefik.http.routers.sonarr.tls.certresolver: acme-wamc
+      traefik.http.routers.sonarr.middlewares: auth@docker
       com.centurylinklabs.watchtower.enable: true
     volumes:
       - /etc/localtime:/etc/localtime:ro
@@ -67,6 +69,7 @@ services:
       traefik.http.routers.bazarr.rule: >-
         Host(`${DOMAIN_MAIN}`) && PathPrefix(`/bazarr`)
       traefik.http.routers.bazarr.tls.certresolver: acme-wamc
+      traefik.http.routers.bazarr.middlewares: auth@docker
       com.centurylinklabs.watchtower.enable: true
     volumes:
       - ./media/bazarr/config:/config
@@ -84,6 +87,7 @@ services:
       traefik.http.routers.radarr.rule: >-
         Host(`${DOMAIN_MAIN}`) && PathPrefix(`/radarr`)
       traefik.http.routers.radarr.tls.certresolver: acme-wamc
+      traefik.http.routers.radarr.middlewares: auth@docker
       com.centurylinklabs.watchtower.enable: true
     volumes:
       - /etc/localtime:/etc/localtime:ro
@@ -104,6 +108,7 @@ services:
       traefik.http.routers.jackett.rule: >-
         Host(`${DOMAIN_MAIN}`) && PathPrefix(`/jackett`)
       traefik.http.routers.jackett.tls.certresolver: acme-wamc
+      traefik.http.routers.jackett.middlewares: auth@docker
       com.centurylinklabs.watchtower.enable: true
     volumes:
       - ./media/jackett/config/:/config
@@ -125,7 +130,7 @@ services:
       traefik.http.routers.webdu.rule: >-
         Host(`${DOMAIN_MAIN}`) && PathPrefix(`/webdu`)
       traefik.http.routers.webdu.tls.certresolver: acme-wamc
-      traefik.http.routers.webdu.middlewares: webdu-stripprefix
+      traefik.http.routers.webdu.middlewares: webdu-stripprefix,auth@docker
       traefik.http.middlewares.webdu-stripprefix.stripprefix.prefixes: /webdu
       com.centurylinklabs.watchtower.enable: true
     restart: always
@@ -152,6 +157,7 @@ services:
       traefik.http.routers.scrutiny.rule: >-
         Host(`scrutiny.${DOMAIN_MAIN}`)
       traefik.http.routers.scrutiny.tls.certresolver: acme-wamc
+      traefik.http.routers.scrutiny.middlewares: auth@docker
       com.centurylinklabs.watchtower.enable: true
     devices:
       - /dev/sda
@@ -170,6 +176,7 @@ services:
       traefik.enable: true
       traefik.http.routers.homer.rule: >-
         Host(`${DOMAIN_MAIN}`) && PathPrefix(`/`)
+      traefik.http.routers.homer.middlewares: auth@docker
       traefik.http.routers.homer.tls.certresolver: acme-wamc
 
   watchtower:
@@ -200,7 +207,6 @@ services:
       - --entrypoints.web-https-redirector.address=:81
       - --entrypoints.web-https-redirector.http.redirections.entryPoint.to=web-secure
       - --entrypoints.web-https-redirector.http.redirections.entryPoint.scheme=https
-      - --entrypoints.web-secure.http.middlewares=auth@docker
       - --entrypoints.web-secure.address=:443
 
       - --certificatesResolvers.acme-wamc.acme.email=lutzky@gmail.com
