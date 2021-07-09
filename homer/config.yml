@@ -131,7 +131,7 @@ services:
         icon: "fas fa-tachometer-alt"
       - name: "Scrutiny"
         subtitle: "Disk S.M.A.R.T monitoring"
-        url: "http://michael:8083"
+        url: "/assets/subdomain.html?sub=scrutiny"
         icon: "fas fa-file-medical-alt"
       - name: "Traefik"
         subtitle: "Load balancer"

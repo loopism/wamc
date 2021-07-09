@@ -1,0 +1,11 @@
+<html>
+  <head>
+ <script>
+   let subdomain = new URLSearchParams(window.location.search).get("sub");
+   if (subdomain) {
+     window.location = `https://${subdomain}.${window.location.hostname}`;
+   } else {
+     document.write("?sub not specified");
+   }
+ </script>
+</html>

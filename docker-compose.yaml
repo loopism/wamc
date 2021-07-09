@@ -147,7 +147,12 @@ services:
       - /run/udev:/run/udev:ro
     cap_add:
       - SYS_RAWIO
-    # Traefik not enabled: See https://github.com/AnalogJ/scrutiny/issues/56
+    labels:
+      traefik.enable: true
+      traefik.http.routers.scrutiny.rule: >-
+        Host(`scrutiny.${DOMAIN_MAIN}`)
+      traefik.http.routers.scrutiny.tls.certresolver: acme-wamc
+      com.centurylinklabs.watchtower.enable: true
     devices:
       - /dev/sda
       - /dev/sdb
