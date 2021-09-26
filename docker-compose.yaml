@@ -10,7 +10,7 @@ services:
     environment:
       - PLEX_UID=${USER_ID}
       - PLEX_GID=${GROUP_ID}
-      - ADVERTISE_IP=http://${LOCAL_STATIC_IP}:32400,https://${DOMAIN_MAIN}:${PLEX_EXT_PORT}
+      - ADVERTISE_IP=http://${LOCAL_STATIC_IP}:32400
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - ./data:/data
@@ -35,9 +35,7 @@ services:
     labels:
       traefik.enable: true
       traefik.http.routers.transmission.rule: >-
-        Host(`${DOMAIN_MAIN}`) && PathPrefix(`/transmission`)
-      traefik.http.routers.transmission.tls.certresolver: acme-wamc
-      traefik.http.routers.transmission.middlewares: auth@docker
+        PathPrefix(`/transmission`)
       com.centurylinklabs.watchtower.enable: true
     restart: always
 
@@ -47,9 +45,7 @@ services:
     labels:
       traefik.enable: true
       traefik.http.routers.sonarr.rule: >-
-        Host(`${DOMAIN_MAIN}`) && PathPrefix(`/sonarr`)
-      traefik.http.routers.sonarr.tls.certresolver: acme-wamc
-      traefik.http.routers.sonarr.middlewares: auth@docker
+        PathPrefix(`/sonarr`)
       com.centurylinklabs.watchtower.enable: true
     volumes:
       - /etc/localtime:/etc/localtime:ro
@@ -67,9 +63,7 @@ services:
     labels:
       traefik.enable: true
       traefik.http.routers.bazarr.rule: >-
-        Host(`${DOMAIN_MAIN}`) && PathPrefix(`/bazarr`)
-      traefik.http.routers.bazarr.tls.certresolver: acme-wamc
-      traefik.http.routers.bazarr.middlewares: auth@docker
+        PathPrefix(`/bazarr`)
       com.centurylinklabs.watchtower.enable: true
     volumes:
       - ./media/bazarr/config:/config
@@ -85,9 +79,7 @@ services:
     labels:
       traefik.enable: true
       traefik.http.routers.radarr.rule: >-
-        Host(`${DOMAIN_MAIN}`) && PathPrefix(`/radarr`)
-      traefik.http.routers.radarr.tls.certresolver: acme-wamc
-      traefik.http.routers.radarr.middlewares: auth@docker
+        PathPrefix(`/radarr`)
       com.centurylinklabs.watchtower.enable: true
     volumes:
       - /etc/localtime:/etc/localtime:ro
@@ -106,9 +98,7 @@ services:
     labels:
       traefik.enable: true
       traefik.http.routers.jackett.rule: >-
-        Host(`${DOMAIN_MAIN}`) && PathPrefix(`/jackett`)
-      traefik.http.routers.jackett.tls.certresolver: acme-wamc
-      traefik.http.routers.jackett.middlewares: auth@docker
+        PathPrefix(`/jackett`)
       com.centurylinklabs.watchtower.enable: true
     volumes:
       - ./media/jackett/config/:/config
@@ -128,9 +118,8 @@ services:
     labels:
       traefik.enable: true
       traefik.http.routers.webdu.rule: >-
-        Host(`${DOMAIN_MAIN}`) && PathPrefix(`/webdu`)
-      traefik.http.routers.webdu.tls.certresolver: acme-wamc
-      traefik.http.routers.webdu.middlewares: webdu-stripprefix,auth@docker
+        PathPrefix(`/webdu`)
+      traefik.http.routers.webdu.middlewares: webdu-stripprefix
       traefik.http.middlewares.webdu-stripprefix.stripprefix.prefixes: /webdu
       com.centurylinklabs.watchtower.enable: true
     restart: always
@@ -153,11 +142,6 @@ services:
     cap_add:
       - SYS_RAWIO
     labels:
-      traefik.enable: true
-      traefik.http.routers.scrutiny.rule: >-
-        Host(`scrutiny.${DOMAIN_MAIN}`)
-      traefik.http.routers.scrutiny.tls.certresolver: acme-wamc
-      traefik.http.routers.scrutiny.middlewares: auth@docker
       com.centurylinklabs.watchtower.enable: true
     devices:
       - /dev/sda
@@ -175,9 +159,7 @@ services:
     labels:
       traefik.enable: true
       traefik.http.routers.homer.rule: >-
-        Host(`${DOMAIN_MAIN}`) && PathPrefix(`/`)
-      traefik.http.routers.homer.middlewares: auth@docker
-      traefik.http.routers.homer.tls.certresolver: acme-wamc
+        PathPrefix(`/`)
 
   watchtower:
     container_name: watchtower
@@ -195,8 +177,7 @@ services:
     image: traefik:v2.2
     restart: always
     ports:
-      - "81:81"
-      - "443:443"
+      - "80:80"
       - "8080:8080"
     command:
       - --accesslog.filePath=/logs/access.log
@@ -204,21 +185,11 @@ services:
       - --global.sendanonymoususage=false
       - --providers.docker
       - --providers.docker.exposedbydefault=false
-      - --entrypoints.web-https-redirector.address=:81
-      - --entrypoints.web-https-redirector.http.redirections.entryPoint.to=web-secure
-      - --entrypoints.web-https-redirector.http.redirections.entryPoint.scheme=https
-      - --entrypoints.web-secure.address=:443
 
-      - --certificatesResolvers.acme-wamc.acme.email=lutzky@gmail.com
-      - --certificatesResolvers.acme-wamc.acme.storage=/acme.json
-      - --certificatesResolvers.acme-wamc.acme.httpChallenge.entryPoint=web-https-redirector
     labels:
       traefik.enable: true
       com.centurylinklabs.watchtower.enable: true
-      traefik.http.middlewares.auth.basicauth.usersfile: /.htpasswd
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - ./.htpasswd:/.htpasswd
-      - ./acme.json:/acme.json
       - ./traefik-logs:/logs
     container_name: traefik
