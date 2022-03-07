@@ -147,6 +147,15 @@ services:
       - /dev/sda
       - /dev/sdb
 
+  status:
+    container_name: status
+    image: nginx
+    restart: always
+    ports:
+      - "8050:80"
+    volumes:
+      - ./status-html:/usr/share/nginx/html:ro
+
   homer:
     container_name: wamc_homer
     image: b4bz/homer:latest
