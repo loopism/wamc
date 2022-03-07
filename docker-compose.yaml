@@ -170,6 +170,17 @@ services:
       traefik.http.routers.homer.rule: >-
         PathPrefix(`/`)
 
+  overseerr:
+    container_name: wamc_overseerr
+    image: sctx/overseerr:latest
+    environment:
+      - TZ=Europe/Dublin
+    ports:
+      - 5055:5055
+    volumes:
+      - ./overseerr/:/app/config
+    restart: unless-stopped
+
   watchtower:
     container_name: watchtower
     image: containrrr/watchtower
